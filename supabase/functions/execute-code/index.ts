@@ -1,9 +1,10 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import 'https://deno.land/x/xhr@0.1.0/mod.ts';
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
 };
 
 // Judge0 language IDs (verified from https://ce.judge0.com/languages)
@@ -40,11 +41,11 @@ const languageIds: Record<string, number> = {
 };
 
 // Free public Judge0 instance (no API key required)
-const JUDGE0_API = "https://ce.judge0.com";
+const JUDGE0_API = 'https://ce.judge0.com';
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === "OPTIONS") {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -57,35 +58,48 @@ serve(async (req) => {
     if (!languageId) {
       return new Response(
         JSON.stringify({ error: `Unsupported language: ${language}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
     // Submit code to Judge0 (free public instance)
     console.log(`Submitting ${language} code with language_id: ${languageId}`);
 
-    const submitResponse = await fetch(`${JUDGE0_API}/submissions?base64_encoded=false&wait=false`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        language_id: languageId,
-        source_code: code,
-        stdin: "",
-      }),
-    });
+    const submitResponse = await fetch(
+      `${JUDGE0_API}/submissions?base64_encoded=false&wait=false`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language_id: languageId,
+          source_code: code,
+          stdin: '',
+        }),
+      }
+    );
 
     if (!submitResponse.ok) {
       const errorText = await submitResponse.text();
-      console.error("Judge0 submission error:", errorText);
-      console.error("Status:", submitResponse.status, submitResponse.statusText);
+      console.error('Judge0 submission error:', errorText);
+      console.error(
+        'Status:',
+        submitResponse.status,
+        submitResponse.statusText
+      );
       return new Response(
         JSON.stringify({
           error: `Failed to submit code for execution. Judge0 API returned ${submitResponse.status}: ${submitResponse.statusText}`,
-          details: errorText
+          details: errorText,
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
@@ -105,7 +119,7 @@ serve(async (req) => {
       );
 
       if (!statusResponse.ok) {
-        console.error("Failed to get submission status");
+        console.error('Failed to get submission status');
         attempts++;
         continue;
       }
@@ -123,13 +137,16 @@ serve(async (req) => {
 
     if (!result) {
       return new Response(
-        JSON.stringify({ error: "Timeout: Code execution took too long" }),
-        { status: 408, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: 'Timeout: Code execution took too long' }),
+        {
+          status: 408,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
       );
     }
 
     // Process result
-    let output = "";
+    let output = '';
     let error = null;
 
     if (result.stdout) {
@@ -139,7 +156,10 @@ serve(async (req) => {
     if (result.stderr) {
       // Filter out noisy JVM warnings
       error = result.stderr
-        .replace(/OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release\.\n?/g, "")
+        .replace(
+          /OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release\.\n?/g,
+          ''
+        )
         .trim();
 
       if (!error) error = null; // If error becomes empty after filtering, set to null
@@ -151,30 +171,31 @@ serve(async (req) => {
 
     if (result.status?.id === 6) {
       // Compilation error
-      error = result.compile_output || "Compilation error";
+      error = result.compile_output || 'Compilation error';
     } else if (result.status?.id === 11) {
       // Runtime error
-      error = result.stderr || "Runtime error";
+      error = result.stderr || 'Runtime error';
     } else if (result.status?.id === 5) {
       // Time limit exceeded
-      error = "Time limit exceeded";
+      error = 'Time limit exceeded';
     } else if (result.status?.id === 13) {
       // Internal error
-      error = "Internal error occurred";
+      error = 'Internal error occurred';
     }
 
     console.log(`Execution complete. Output: ${output?.substring(0, 100)}...`);
 
     return new Response(
       JSON.stringify({ output, error, status: result.status?.description }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
-    console.error("Error executing code:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error('Error executing code:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unexpected error occurred';
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });

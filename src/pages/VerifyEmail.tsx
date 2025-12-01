@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>(
+    'verifying'
+  );
   const [error, setError] = useState<string>('');
   const { isSignInLink, signInWithLink } = useAuth();
   const navigate = useNavigate();
@@ -15,16 +17,16 @@ export default function VerifyEmail() {
     const verifyEmail = async () => {
       try {
         const url = window.location.href;
-        
+
         if (isSignInLink(url)) {
           // Get the email from localStorage or prompt the user to enter it
           let email = window.localStorage.getItem('emailForSignIn');
-          
+
           if (!email) {
             // If the user opened the link on a different device, prompt for email
             email = window.prompt('Please provide your email for confirmation');
           }
-          
+
           if (email) {
             await signInWithLink(email, url);
             setStatus('success');
@@ -53,7 +55,9 @@ export default function VerifyEmail() {
           <div className="flex flex-col items-center">
             <Loader2 className="mb-4 h-12 w-12 animate-spin text-primary" />
             <h1 className="mb-2 text-2xl font-bold">Verifying your email...</h1>
-            <p className="text-muted-foreground">Please wait while we verify your email address.</p>
+            <p className="text-muted-foreground">
+              Please wait while we verify your email address.
+            </p>
           </div>
         )}
 
@@ -76,10 +80,10 @@ export default function VerifyEmail() {
               </svg>
             </div>
             <h1 className="mb-2 text-2xl font-bold">Email Verified!</h1>
-            <p className="mb-6 text-muted-foreground">You have successfully signed in.</p>
-            <Button onClick={() => navigate('/')}>
-              Go to Dashboard
-            </Button>
+            <p className="mb-6 text-muted-foreground">
+              You have successfully signed in.
+            </p>
+            <Button onClick={() => navigate('/')}>Go to Dashboard</Button>
           </div>
         )}
 
@@ -107,7 +111,9 @@ export default function VerifyEmail() {
               <Button variant="outline" onClick={() => navigate('/login')}>
                 Back to Login
               </Button>
-              <Button onClick={() => window.location.reload()}>Try Again</Button>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
             </div>
           </div>
         )}

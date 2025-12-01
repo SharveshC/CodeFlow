@@ -1,14 +1,21 @@
-import { Terminal, CheckCircle, XCircle, Loader2, Clock } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Terminal, CheckCircle, XCircle, Loader2, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface OutputConsoleProps {
   output: string;
   isLoading: boolean;
   isError: boolean;
   executionTime?: number;
+  onClear?: () => void;
 }
 
-const OutputConsole = ({ output, isLoading, isError, executionTime }: OutputConsoleProps) => {
+const OutputConsole = ({
+  output,
+  isLoading,
+  isError,
+  executionTime,
+  onClear,
+}: OutputConsoleProps) => {
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-editor-border bg-console-bg">
       <div className="flex items-center justify-between border-b border-border bg-secondary/30 px-4 py-2">
@@ -41,6 +48,18 @@ const OutputConsole = ({ output, isLoading, isError, executionTime }: OutputCons
               {executionTime}ms
             </span>
           )}
+          {onClear && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClear();
+              }}
+              className="ml-2 text-xs text-muted-foreground hover:text-foreground"
+              title="Clear output"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
       <div className="flex-1 overflow-auto p-4">
@@ -48,14 +67,16 @@ const OutputConsole = ({ output, isLoading, isError, executionTime }: OutputCons
           <div className="flex h-full items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Executing code...</span>
+              <span className="text-sm text-muted-foreground">
+                Executing code...
+              </span>
             </div>
           </div>
         ) : output ? (
           <pre
             className={cn(
-              "whitespace-pre-wrap font-mono text-sm leading-relaxed",
-              isError ? "text-destructive" : "text-foreground"
+              'whitespace-pre-wrap font-mono text-sm leading-relaxed',
+              isError ? 'text-destructive' : 'text-foreground'
             )}
           >
             {output}

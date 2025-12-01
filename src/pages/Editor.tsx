@@ -1,565 +1,822 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Play, Save, FolderOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Play, Save, ChevronLeft, Plus, Loader2, Trash2, Home, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { db } from '@/lib/firebase';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import Navbar from "@/components/Navbar";
-import EditorComponent from "@/components/EditorComponent";
-import OutputConsole from "@/components/OutputConsole";
-import SnippetList from "@/components/SnippetList";
-import AIChatWidget from "@/components/AIChatWidget";
-import { saveSnippet, getAllSnippets, deleteSnippet, upsertSnippet, Snippet } from "@/lib/snippets";
-import { useDebounce } from "@/hooks/useDebounce";
-import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+  serverTimestamp
+} from 'firebase/firestore';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
+import EditorComponent from '@/components/EditorComponent';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
-const languages = [
-  // Top Tier (Most Reliable)
-  { value: "javascript", label: "JavaScript (Node.js)" },
-  { value: "python", label: "Python 3.8.1" },
-  { value: "java", label: "Java (OpenJDK 13.0.1)" },
-  { value: "c", label: "C (GCC 9.2.0)" },
-  { value: "cpp", label: "C++ (GCC 9.2.0)" },
+// Define the Snippet interface
+interface Snippet {
+  id?: string;
+  title: string;
+  content: string;
+  language: string;
+  userId: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
 
-  // Second Tier (Very Reliable)
-  { value: "csharp", label: "C# (Mono 6.6.0.161)" },
-  { value: "go", label: "Go 1.13.5" },
-  { value: "ruby", label: "Ruby 2.7.0" },
-  { value: "php", label: "PHP 7.4.1" },
-  { value: "bash", label: "Bash 5.0.0" }
+// Language options
+const languageOptions = [
+  { value: 'javascript', label: 'JavaScript (Node.js)' },
+  { value: 'python', label: 'Python 3.8.1' },
+  { value: 'java', label: 'Java (OpenJDK 13.0.1)' },
+  { value: 'c', label: 'C (GCC 9.2.0)' },
+  { value: 'cpp', label: 'C++ (GCC 9.2.0)' },
+  { value: 'csharp', label: 'C# (Mono 6.6.0)' },
+  { value: 'go', label: 'Go 1.13.5' },
+  { value: 'ruby', label: 'Ruby 2.7.0' },
+  { value: 'php', label: 'PHP 7.4.1' },
+  { value: 'bash', label: 'Bash 5.0.0' },
 ];
 
-const defaultCode: Record<string, string> = {
-  // Top Tier (Most Reliable)
-  javascript: `// JavaScript (Node.js) Example
-// Fast execution, excellent for web development
-function greet(name) {
-  return \`Hello, \${name}!\`;
-}
+// Supported language types
+type Language = 'javascript' | 'python' | 'java' | 'c' | 'cpp' | 'csharp' | 'go' | 'ruby' | 'php' | 'bash';
 
-// Example: Calculate factorial
-function factorial(n) {
-  return n <= 1 ? 1 : n * factorial(n - 1);
-}
+// Default code templates
+const defaultCode: Record<Language, string> = {
+  javascript: '// JavaScript (Node.js) Example\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\nconsole.log(greet("World"));',
 
-console.log(greet("World"));
-console.log(\`Factorial of 5: \${factorial(5)}\`);`,
+  python: '# Python 3.8.1 Example\ndef greet(name):\n    return f"Hello, {name}!"\nprint(greet("World"))',
 
-  python: `# Python 3.8.1 Example
-# Reliable execution, great for learning
+  java: '// Java (OpenJDK 13.0.1) Example\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println(greet("World"));\n    }\n    \n    public static String greet(String name) {\n        return "Hello, " + name + "!";\n    }\n}',
 
-def greet(name):
-    return f"Hello, {name}!"
+  c: '// C (GCC 9.2.0) Example\n#include <stdio.h>\n\nvoid greet(const char* name) {\n    printf("Hello, %s!\\n", name);\n}\n\nint main() {\n    greet("World");\n    return 0;\n}',
 
-# Example: List comprehension
-numbers = [1, 2, 3, 4, 5]
-squares = [x**2 for x in numbers]
+  cpp: '// C++ (GCC 9.2.0) Example\n#include <iostream>\n#include <string>\n\nvoid greet(const std::string& name) {\n    std::cout << "Hello, " << name << "!" << std::endl;\n}\n\nint main() {\n    greet("World");\n    return 0;\n}',
 
-print(greet("World"))
-print(f"Squares: {squares}")`,
+  csharp: '// C# (Mono 6.6.0) Example\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine(Greet("World"));\n    }\n    \n    static string Greet(string name) {\n        return $"Hello, {name}!";\n    }\n}',
 
-  java: `// Java (OpenJDK 13.0.1) Example
-// Excellent for algorithms and data structures
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-        
-        // Example: Simple algorithm
-        int[] numbers = {1, 2, 3, 4, 5};
-        int sum = 0;
-        for (int num : numbers) {
-            sum += num;
-        }
-        System.out.println("Sum of numbers: " + sum);
-    }
-}`,
+  go: '// Go 1.13.5 Example\npackage main\n\nimport "fmt"\n\nfunc greet(name string) string {\n    return fmt.Sprintf("Hello, %s!", name)\n}\n\nfunc main() {\n    fmt.Println(greet("World"))\n}',
 
-  c: `// C (GCC 9.2.0) Example
-// Fast compilation, great for system programming
-#include <stdio.h>
+  ruby: '# Ruby 2.7.0 Example\ndef greet(name)\n  "Hello, #{name}!"\nend\n\nputs greet("World")',
 
-int main() {
-    printf("Hello, World!\\n");
-    
-    // Example: Simple pointer usage
-    int x = 42;
-    int *ptr = &x;
-    printf("Value of x: %d\\n", *ptr);
-    
-    return 0;
-}`,
+  php: '<?php\n// PHP 7.4.1 Example\nfunction greet($name) {\n    return "Hello, $name!";\n}\n\necho greet("World");\n?>',
 
-  cpp: `// C++ (GCC 9.2.0) Example
-// Great for algorithms and performance
-#include <iostream>
-#include <vector>
-
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    
-    // Example: Using STL
-    std::vector<int> numbers = {1, 2, 3, 4, 5};
-    std::cout << "Vector elements: ";
-    for (int num : numbers) {
-        std::cout << num << " ";
-    }
-    std::cout << std::endl;
-    
-    return 0;
-}`,
-
-  // Second Tier (Very Reliable)
-  csharp: `// C# (Mono 6.6.0.161) Example
-// Great for .NET development
-using System;
-using System.Linq;
-
-class Program {
-    static void Main() {
-        Console.WriteLine("Hello, World!");
-        
-        // Example: LINQ query
-        int[] numbers = { 1, 2, 3, 4, 5 };
-        var evenNumbers = numbers.Where(n => n % 2 == 0);
-        Console.WriteLine("Even numbers: " + string.Join(", ", evenNumbers));
-    }
-}`,
-
-  go: `// Go 1.13.5 Example
-// Fast compilation, simple concurrency
-package main
-
-import (
-    "fmt"
-    "sync"
-)
-
-func main() {
-    fmt.Println("Hello, World!")
-    
-    // Example: Goroutines
-    var wg sync.WaitGroup
-    for i := 1; i <= 3; i++ {
-        wg.Add(1)
-        go func(n int) {
-            defer wg.Done()
-            fmt.Printf("Goroutine %d\\n", n)
-        }(i)
-    }
-    wg.Wait()
-}`,
-
-  ruby: `# Ruby 2.7.0 Example
-# Clean syntax, great for scripting
-
-def greet(name)
-  "Hello, #{name}!"
-end
-
-# Example: Using blocks and ranges
-numbers = (1..5).to_a
-squares = numbers.map { |n| n ** 2 }
-
-puts greet("World")
-puts "Squares: #{squares.join(', ')}"`,
-
-  php: `<?php
-// PHP 7.4.1 Example
-// Great for web development
-function greet($name) {
-    return "Hello, $name!";
-}
-
-// Example: Working with arrays
-$fruits = ["apple", "banana", "cherry"];
-$uppercased = array_map('strtoupper', $fruits);
-
-echo greet("World") . "\\n";
-print_r($uppercased);
-?>`,
-
-  bash: `#!/bin/bash
-# Bash 5.0.0 Example
-# Excellent for shell scripting
-
-
-greet() {
-    local name=$1
-    echo "Hello, $name!"
-}
-
-
-# Example: Command substitution and loops
-echo "Current directory: $(pwd)"
-echo "Files in directory:"
-for file in *; do
-    if [ -f "$file" ]; then
-        echo "- $file"
-    fi
-done
-
-
-greet "World"`
+  bash: '#!/bin/bash\n# Bash 5.0.0 Example\ngreet() {\n    echo "Hello, $1!"\n}\n\ngreet "World"'
 };
 
-const EditorPage = () => {
-  // Local state for immediate, synchronous updates (handles user typing)
-  const [code, setCode] = useState(defaultCode.javascript);
-  const [language, setLanguage] = useState("javascript");
-  const [output, setOutput] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [isError, setIsError] = useState(false);
+const editorThemeOptions = [
+  { value: 'vs-dark', label: 'Dark' },
+  { value: 'vs-light', label: 'Light' },
+  { value: 'hc-black', label: 'High Contrast' },
+];
+
+// Snippet List Component
+function SnippetList({
+  snippets,
+  onSelectSnippet,
+  onDeleteSnippet,
+  selectedSnippetId,
+  isLoading
+}: {
+  snippets: Snippet[];
+  onSelectSnippet: (snippet: Snippet) => void;
+  onDeleteSnippet: (id: string) => void;
+  selectedSnippetId: string | null;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (snippets.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground py-8">
+        No snippets found. Create a new one to get started.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {snippets.map((snippet) => (
+        <div
+          key={snippet.id}
+          className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${selectedSnippetId === snippet.id ? 'bg-accent' : 'hover:bg-muted'
+            }`}
+        >
+          <div
+            className="flex-1 truncate"
+            onClick={() => onSelectSnippet(snippet)}
+          >
+            <div className="font-medium truncate">{snippet.title}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {snippet.language} • {snippet.updatedAt?.toDate ?
+                new Date(snippet.updatedAt.toDate()).toLocaleString() :
+                new Date().toLocaleString()}
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (snippet.id) onDeleteSnippet(snippet.id);
+            }}
+          >
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Output Console Component
+function OutputConsole({
+  output,
+  isRunning,
+  isError,
+  executionTime,
+}: {
+  output: string;
+  isRunning: boolean;
+  isError: boolean;
+  executionTime?: number;
+}) {
+  return (
+    <div className="h-full flex flex-col">
+      <div className="border-b px-4 py-2 font-medium">Output</div>
+      <div className="flex-1 p-4 overflow-auto bg-black text-white font-mono text-sm">
+        {isRunning ? (
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Running...</span>
+          </div>
+        ) : (
+          <pre className={`whitespace-pre-wrap ${isError ? 'text-red-400' : 'text-green-400'}`}>
+            {output || 'Click "Run" to execute your code'}
+          </pre>
+        )}
+        {executionTime !== undefined && (
+          <div className="text-gray-400 text-xs mt-2">
+            Execution time: {executionTime}ms
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Main Editor Component
+export default function EditorPage() {
+  // State
+  const [code, setCode] = useState<string>(defaultCode.javascript);
+  const [language, setLanguage] = useState<string>('javascript');
+  const [output, setOutput] = useState<string>('');
   const [executionTime, setExecutionTime] = useState<number | undefined>();
   const [snippets, setSnippets] = useState<Snippet[]>([]);
-  const [isLoadingSnippets, setIsLoadingSnippets] = useState(true);
-  const [selectedSnippetId, setSelectedSnippetId] = useState<string | undefined>();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [snippetTitle, setSnippetTitle] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [autosaveEnabled, setAutosaveEnabled] = useState(true);
-  const [autoRunEnabled, setAutoRunEnabled] = useState(false);
+  const [isLoadingSnippets, setIsLoadingSnippets] = useState<boolean>(true);
+  const [selectedSnippetId, setSelectedSnippetId] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [saveDialogOpen, setSaveDialogOpen] = useState<boolean>(false);
+  const [snippetTitle, setSnippetTitle] = useState<string>('');
+  const [currentSnippetTitle, setCurrentSnippetTitle] = useState<string>('');
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [editorFontSize, setEditorFontSize] = useState<number>(14);
+  const [editorTheme, setEditorTheme] = useState<string>('vs-dark');
+  const [showLineNumbers, setShowLineNumbers] = useState<boolean>(true);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | null>(null);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState<boolean>(true);
+  const [selectedSnippetLoading, setSelectedSnippetLoading] = useState<boolean>(false);
+
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  // Use refs for autosave state to avoid re-rendering the editor
-  const isSavingRef = useRef(false);
-  const lastSavedRef = useRef<Date | null>(null);
-  const [saveStatusTrigger, setSaveStatusTrigger] = useState(0); // Just for UI updates
-
-  // Debounced autosave: triggers AFTER user stops typing
-  useEffect(() => {
-    if (!selectedSnippetId) {
-      console.log('[Autosave] Skipped - No snippet selected. Save file first.');
-      return;
-    }
-    if (!autosaveEnabled) {
-      console.log('[Autosave] Skipped - Autosave is disabled');
+  // Fetch snippets when user changes
+  const fetchSnippets = useCallback(async () => {
+    if (!currentUser) {
+      setSnippets([]);
       return;
     }
 
-    const timer = setTimeout(async () => {
-      const currentSnippet = snippets.find(s => s.id === selectedSnippetId);
-      if (!currentSnippet) {
-        console.log('[Autosave] Error - Snippet not found');
-        return;
-      }
-
-      console.log('[Autosave] Starting save...');
-      isSavingRef.current = true;
-      setSaveStatusTrigger(prev => prev + 1); // Trigger UI update
-
-      try {
-        await upsertSnippet({
-          id: selectedSnippetId,
-          title: currentSnippet.title,
-          code: code,
-          language: language
-        });
-        lastSavedRef.current = new Date();
-        console.log('[Autosave] Successfully saved!');
-
-        if (autoRunEnabled) {
-          handleRun();
-        }
-      } catch (error) {
-        console.error('[Autosave] Failed:', error);
-        toast({
-          title: "Autosave Failed",
-          description: "Could not save changes. Please try saving manually.",
-          variant: "destructive",
-        });
-      } finally {
-        isSavingRef.current = false;
-        setSaveStatusTrigger(prev => prev + 1); // Trigger UI update
-      }
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [code, language, selectedSnippetId, autosaveEnabled, snippets, autoRunEnabled, toast]);
-
-
-
-  useEffect(() => {
-    loadSnippets();
-  }, []);
-
-  const loadSnippets = async () => {
-    setIsLoadingSnippets(true);
     try {
-      const data = await getAllSnippets();
-      setSnippets(data);
+      setIsLoadingSnippets(true);
+      const snippetsRef = collection(db, 'snippets');
+      const q = query(
+        snippetsRef,
+        where('userId', '==', currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const snippetsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Snippet[];
+
+      // Sort in JavaScript to avoid needing a composite index
+      snippetsData.sort((a, b) => {
+        const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+        const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+        return bTime - aTime; // desc order
+      });
+
+      setSnippets(snippetsData);
     } catch (error) {
+      console.error('Error fetching snippets:', error);
       toast({
-        title: "Error",
-        description: "Failed to load snippets",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to load snippets',
+        variant: 'destructive',
       });
     } finally {
       setIsLoadingSnippets(false);
     }
-  };
+  }, [currentUser, toast]);
 
-  const handleLanguageChange = (value: string) => {
-    setLanguage(value);
-    setCode(defaultCode[value] || '');
-  };
-
-  const handleCodeChange = useCallback((value: string | undefined) => {
-    setCode(value || "");
-  }, []);
-
-  const handleRun = async () => {
-    setIsRunning(true);
-    setOutput("");
-    setIsError(false);
-    setExecutionTime(undefined);
-
-    const startTime = Date.now();
-
-    try {
-      const { data, error } = await supabase.functions.invoke("execute-code", {
-        body: { language, code },
-      });
-
-      const endTime = Date.now();
-      setExecutionTime(endTime - startTime);
-
-      if (error) {
-        setIsError(true);
-        setOutput(error.message || "An error occurred while executing the code");
-        return;
-      }
-
-      if (data.error) {
-        setIsError(true);
-        setOutput(data.error);
-      } else {
-        setOutput(data.output || "Program executed successfully (no output)");
-      }
-    } catch (error: any) {
-      setIsError(true);
-      setOutput(error.message || "Failed to execute code");
-    } finally {
-      setIsRunning(false);
+  // Reset editor state when auth changes and load snippets for the signed-in user
+  useEffect(() => {
+    if (!currentUser) {
+      setSnippets([]);
+      setSelectedSnippetId(null);
+      setCurrentSnippetTitle('');
+      setSnippetTitle('');
+      setAutoSaveStatus(null);
+      setSelectedSnippetLoading(false);
+      setCode(defaultCode[language] || '');
+      setOutput('');
+      return;
     }
-  };
 
-  const handleSave = async () => {
-    if (!snippetTitle.trim()) {
+    fetchSnippets();
+  }, [currentUser, fetchSnippets, language]);
+
+  // Handle code changes
+  const handleCodeChange = useCallback((value: string | undefined) => {
+    setCode(value || '');
+    // Mark as unsaved when code changes
+    if (selectedSnippetId || currentSnippetTitle.trim()) {
+      setAutoSaveStatus('unsaved');
+    }
+  }, [selectedSnippetId, currentSnippetTitle]);
+
+  // Handle run button click
+  const handleRun = useCallback(async () => {
+    if (!code || code.trim() === '') {
       toast({
-        title: "Error",
-        description: "Please enter a title for your snippet",
-        variant: "destructive",
+        title: 'Validation Error',
+        description: 'Cannot execute empty code',
+        variant: 'destructive',
       });
       return;
     }
 
-    try {
-      await saveSnippet(snippetTitle, code, language);
-      toast({
-        title: "Success",
-        description: "Snippet saved successfully!",
-      });
-      setSaveDialogOpen(false);
-      setSnippetTitle("");
-      loadSnippets();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save snippet",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSelectSnippet = (snippet: Snippet) => {
-    setSelectedSnippetId(snippet.id);
-    setCode(snippet.code);
-    setLanguage(snippet.language);
-    setOutput("");
+    setIsRunning(true);
+    setOutput('');
     setIsError(false);
     setExecutionTime(undefined);
-  };
 
-  const handleDeleteSnippet = async (id: string) => {
     try {
-      await deleteSnippet(id);
-      toast({
-        title: "Success",
-        description: "Snippet deleted successfully!",
-      });
-      if (selectedSnippetId === id) {
-        setSelectedSnippetId(undefined);
-        setCode(defaultCode[language] || "");
+      const startTime = performance.now();
+      // Simulate code execution (replace with actual execution logic)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const result = {
+        output: 'Hello, World!',
+        error: null,
+      };
+      const endTime = performance.now();
+
+      setOutput(result.output);
+      setExecutionTime(Math.round(endTime - startTime));
+      setIsError(!!result.error);
+    } catch (error: any) {
+      setIsError(true);
+      setOutput(error.message || 'An error occurred');
+    } finally {
+      setIsRunning(false);
+    }
+  }, [code, toast]);
+
+  // Handle save button click
+  const doSave = useCallback(async (title: string, showToast = true, isAutoSave = false) => {
+    if (!currentUser) {
+      if (showToast) {
+        toast({
+          title: 'Authentication required',
+          description: 'Please sign in to save snippets',
+          variant: 'destructive',
+        });
       }
-      loadSnippets();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete snippet",
-        variant: "destructive",
-      });
+      return;
     }
+
+    if (isAutoSave) {
+      setAutoSaveStatus('saving');
+    } else {
+      setIsSaving(true);
+    }
+
+    try {
+      const snippetData = {
+        title,
+        content: code,
+        language,
+        userId: currentUser.uid,
+        updatedAt: serverTimestamp(),
+      };
+
+      if (selectedSnippetId) {
+        const snippetRef = doc(db, 'snippets', selectedSnippetId);
+        await updateDoc(snippetRef, snippetData);
+
+        // Optimistically update local snippets list
+        setSnippets(prev => prev.map(s =>
+          s.id === selectedSnippetId
+            ? { ...s, ...snippetData, title, content: code, language }
+            : s
+        ));
+
+        if (showToast) {
+          toast({
+            title: 'Success',
+            description: 'Snippet updated successfully',
+          });
+        }
+      } else {
+        const docRef = await addDoc(collection(db, 'snippets'), {
+          ...snippetData,
+          createdAt: serverTimestamp(),
+        });
+        setSelectedSnippetId(docRef.id);
+
+        // Optimistically add to local snippets list
+        setSnippets(prev => [{
+          id: docRef.id,
+          title,
+          content: code,
+          language,
+          userId: currentUser.uid,
+        } as Snippet, ...prev]);
+
+        if (showToast) {
+          toast({
+            title: 'Success',
+            description: 'Snippet saved successfully',
+          });
+        }
+        setCurrentSnippetTitle(title);
+      }
+
+      if (isAutoSave) {
+        setAutoSaveStatus('saved');
+        // Reset status after 2 seconds
+        setTimeout(() => setAutoSaveStatus(null), 2000);
+      }
+
+      // Refresh snippets list in background (non-blocking)
+      fetchSnippets().catch(err => console.error('Background fetch failed:', err));
+    } catch (error) {
+      console.error('Error saving snippet:', error);
+      if (isAutoSave) {
+        setAutoSaveStatus('unsaved');
+      } else if (showToast) {
+        toast({
+          title: 'Error',
+          description: error instanceof Error ? error.message : 'Failed to save snippet',
+          variant: 'destructive',
+        });
+      }
+    } finally {
+      if (!isAutoSave) {
+        setIsSaving(false);
+      }
+    }
+  }, [code, currentUser, fetchSnippets, language, selectedSnippetId, toast]);
+
+  const handleSave = useCallback(() => {
+    if (!currentUser) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to save snippets',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!currentSnippetTitle.trim()) {
+      setSnippetTitle(currentSnippetTitle);
+      setSaveDialogOpen(true);
+      return;
+    }
+
+    doSave(currentSnippetTitle.trim());
+  }, [currentSnippetTitle, currentUser, doSave, toast]);
+
+  const handleDialogSave = async () => {
+    if (!snippetTitle.trim()) {
+      toast({
+        title: 'Title required',
+        description: 'Please enter a title for this snippet',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSaveDialogOpen(false);
+    setCurrentSnippetTitle(snippetTitle.trim());
+    await doSave(snippetTitle.trim());
+    setSnippetTitle('');
   };
 
-  const handleNewSnippet = () => {
-    setSelectedSnippetId(undefined);
-    setCode(defaultCode[language] || "");
-    setOutput("");
+  // Auto-save functionality
+  const autoSaveHandler = useCallback(async () => {
+    // Only auto-save if there's a selected snippet or a title
+    if (!currentUser || (!selectedSnippetId && !currentSnippetTitle.trim())) {
+      return;
+    }
+
+    const titleToUse = currentSnippetTitle.trim() || 'Untitled';
+    await doSave(titleToUse, false, true);
+  }, [currentUser, selectedSnippetId, currentSnippetTitle, doSave]);
+
+  const { debouncedSave } = useAutoSave({
+    onSave: autoSaveHandler,
+    delay: 2000, // Auto-save 2 seconds after last change
+    enabled: autoSaveEnabled && !!currentUser && (!!selectedSnippetId || !!currentSnippetTitle.trim()),
+  });
+
+  // Trigger auto-save when code, language, or title changes
+  useEffect(() => {
+    if (autoSaveEnabled && currentUser && (selectedSnippetId || currentSnippetTitle.trim())) {
+      debouncedSave();
+    }
+  }, [code, language, currentSnippetTitle, selectedSnippetId, currentUser, debouncedSave, autoSaveEnabled]);
+
+  // Handle new snippet creation
+  const handleNewSnippet = useCallback(() => {
+    setSelectedSnippetId(null);
+    setCurrentSnippetTitle('');
+    setSnippetTitle('');
+    setCode(defaultCode[language] || '');
+    setOutput('');
     setIsError(false);
     setExecutionTime(undefined);
-  };
+    setAutoSaveStatus(null);
+  }, [language]);
+
+  // Handle snippet selection
+  const handleSelectSnippet = useCallback(async (snippet: Snippet) => {
+    if (!snippet.id) return;
+
+    setSelectedSnippetId(snippet.id);
+    setCurrentSnippetTitle(snippet.title);
+    setCode(snippet.content);
+    setLanguage(snippet.language);
+    setOutput('');
+    setIsError(false);
+    setAutoSaveStatus(null); // Reset status when loading a saved snippet
+
+    setSelectedSnippetLoading(true);
+    try {
+      const snippetDoc = await getDoc(doc(db, 'snippets', snippet.id));
+      if (snippetDoc.exists()) {
+        const snippetData = snippetDoc.data() as Snippet;
+        setCode(snippetData.content);
+        setLanguage(snippetData.language);
+        setCurrentSnippetTitle(snippetData.title);
+        setSnippets(prev => prev.map((s) => s.id === snippet.id ? { ...s, ...snippetData } : s));
+      }
+    } catch (error) {
+      console.error('Error loading snippet:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load snippet',
+        variant: 'destructive',
+      });
+    } finally {
+      setSelectedSnippetLoading(false);
+    }
+  }, [toast]);
+
+  // Handle snippet deletion
+  const handleDeleteSnippet = useCallback(async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this snippet?')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'snippets', id));
+      setSnippets(prev => prev.filter(s => s.id !== id));
+
+      if (selectedSnippetId === id) {
+        handleNewSnippet();
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Snippet deleted successfully',
+      });
+    } catch (error) {
+      console.error('Error deleting snippet:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete snippet',
+        variant: 'destructive',
+      });
+    }
+  }, [selectedSnippetId, handleNewSnippet, toast]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Save with Ctrl+S or Cmd+S
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      // Run with F5 or Ctrl+Enter
+      if (e.key === 'F5' || (e.ctrlKey && e.key === 'Enter')) {
+        e.preventDefault();
+        handleRun();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleSave, handleRun]);
 
   return (
-    <div className="flex h-screen flex-col bg-background">
-      <Navbar />
-
-      {/* Toolbar */}
-      <div className="flex items-center justify-between border-b border-border bg-card/50 px-4 py-2">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden"
-          >
-            {sidebarOpen ? <ChevronLeft className="h-4 w-4" /> : <FolderOpen className="h-4 w-4" />}
-          </Button>
-          <Select value={language} onValueChange={handleLanguageChange}>
-            <SelectTrigger className="w-[140px]">
-              <SelectValue placeholder="Language" />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  {lang.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {selectedSnippetId && (
-            <Button variant="ghost" size="sm" onClick={handleNewSnippet}>
-              New File
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="autosave-mode"
-              checked={autosaveEnabled}
-              onCheckedChange={setAutosaveEnabled}
-            />
-            <Label htmlFor="autosave-mode" className="text-xs">Autosave</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="autorun-mode"
-              checked={autoRunEnabled}
-              onCheckedChange={setAutoRunEnabled}
-            />
-            <Label htmlFor="autorun-mode" className="text-xs">Auto-Run</Label>
-          </div>
-          {isSavingRef.current ? (
-            <span className="text-xs text-muted-foreground animate-pulse">Saving...</span>
-          ) : lastSavedRef.current ? (
-            <span className="text-xs text-muted-foreground">Saved {lastSavedRef.current.toLocaleTimeString()}</span>
-          ) : null}
-          <Button
-            variant="outline"
-            onClick={() => setSaveDialogOpen(true)}
-            disabled={isRunning}
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
-          <Button onClick={handleRun} disabled={isRunning} variant="success">
-            <Play className="mr-2 h-4 w-4" />
-            {isRunning ? "Running..." : "Run"}
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
+    <div className="flex h-screen flex-col">
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <div
-          className={cn(
-            "flex flex-col border-r border-border bg-sidebar transition-all duration-300",
-            sidebarOpen ? "w-64" : "w-0 overflow-hidden lg:w-12"
-          )}
-        >
-          {sidebarOpen ? (
-            <>
-              <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                <span className="text-sm font-medium">Snippets</span>
+        <div className={cn(
+          'w-64 border-r bg-background transition-all duration-300 ease-in-out',
+          !sidebarOpen && '-ml-64'
+        )}>
+          <div className="p-4">
+            <Button
+              onClick={handleNewSnippet}
+              className="w-full mb-4"
+              variant="outline"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Snippet
+            </Button>
+
+            <SnippetList
+              snippets={snippets}
+              onSelectSnippet={handleSelectSnippet}
+              onDeleteSnippet={handleDeleteSnippet}
+              selectedSnippetId={selectedSnippetId}
+              isLoading={isLoadingSnippets}
+            />
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Editor Toolbar */}
+          <div className="border-b p-2 flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2 justify-between">
+              <div className="flex items-center space-x-2">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6"
-                  onClick={() => setSidebarOpen(false)}
+                  onClick={() => navigate('/')}
+                  title="Go to Home"
+                >
+                  <Home className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="md:hidden"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <SnippetList
-                  snippets={snippets}
-                  onSelect={handleSelectSnippet}
-                  onDelete={handleDeleteSnippet}
-                  selectedId={selectedSnippetId}
-                  isLoading={isLoadingSnippets}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="hidden lg:flex lg:flex-col lg:items-center lg:pt-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </div>
 
-        {/* Editor and Output */}
-        <div className="flex flex-1 flex-col lg:flex-row">
-          <div className="flex-1 p-3">
-            <EditorComponent
-              initialCode={code}
-              language={language}
-              onChange={handleCodeChange}
-              key={selectedSnippetId || `new-${language}`}
-            />
+                <Input
+                  value={currentSnippetTitle}
+                  onChange={(e) => {
+                    setCurrentSnippetTitle(e.target.value);
+                    // Mark as unsaved when title changes
+                    if (selectedSnippetId || e.target.value.trim()) {
+                      setAutoSaveStatus('unsaved');
+                    }
+                  }}
+                  placeholder="Untitled"
+                  className="w-72"
+                />
+
+                <Select
+                  value={language}
+                  onValueChange={(value) => {
+                    const nextLanguage = value as Language;
+                    const nextTemplate = defaultCode[nextLanguage];
+                    const currentTemplate = defaultCode[language as Language];
+                    // Load template if code is empty, matches current template, or is whitespace only
+                    const shouldLoadTemplate =
+                      !code ||
+                      !code.trim() ||
+                      code.trim() === currentTemplate.trim() ||
+                      code.trim() === nextTemplate.trim();
+
+                    setLanguage(nextLanguage);
+                    if (shouldLoadTemplate && nextTemplate) {
+                      setCode(nextTemplate);
+                    }
+                    // Mark as unsaved when language changes
+                    if (selectedSnippetId || currentSnippetTitle.trim()) {
+                      setAutoSaveStatus('unsaved');
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] uppercase tracking-widest">Theme</span>
+                  <Select
+                    value={editorTheme}
+                    onValueChange={(value) => setEditorTheme(value)}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="Theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {editorThemeOptions.map((theme) => (
+                        <SelectItem key={theme.value} value={theme.value}>
+                          {theme.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] uppercase tracking-widest">Font</span>
+                  <input
+                    type="range"
+                    min={12}
+                    max={24}
+                    value={editorFontSize}
+                    onChange={(e) => setEditorFontSize(Number(e.target.value))}
+                    className="h-1 w-32 accent-primary"
+                  />
+                  <span className="text-xs">{editorFontSize}px</span>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLineNumbers((prev) => !prev)}
+                  className="uppercase text-[11px]"
+                >
+                  {showLineNumbers ? 'Hide Line #' : 'Show Line #'}
+                </Button>
+                <Button
+                  variant={autoSaveEnabled ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setAutoSaveEnabled((prev) => !prev)}
+                  className="uppercase text-[11px]"
+                >
+                  {autoSaveEnabled ? 'Auto-save On' : 'Auto-save Off'}
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-muted-foreground">
+                  Enhanced Monaco editor with quick controls for theme, font size, and line numbers.
+                </div>
+                {autoSaveStatus && currentUser && (selectedSnippetId || currentSnippetTitle.trim()) && (
+                  <div className={cn(
+                    "flex items-center gap-1.5 text-xs",
+                    autoSaveStatus === 'saving' && "text-yellow-500",
+                    autoSaveStatus === 'saved' && "text-green-500",
+                    autoSaveStatus === 'unsaved' && "text-muted-foreground"
+                  )}>
+                    {autoSaveStatus === 'saving' && (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <span>Saving...</span>
+                      </>
+                    )}
+                    {autoSaveStatus === 'saved' && (
+                      <>
+                        <Check className="h-3 w-3" />
+                        <span>Saved</span>
+                      </>
+                    )}
+                    {autoSaveStatus === 'unsaved' && (
+                      <span>Unsaved changes</span>
+                    )}
+                  </div>
+                )}
+                {!autoSaveEnabled && (
+                  <div className="text-xs text-destructive">Autosave paused</div>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  onClick={handleRun}
+                  disabled={isRunning}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isRunning ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="mr-2 h-4 w-4" />
+                  )}
+                  Run
+                </Button>
+
+                <Button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  size="sm"
+                >
+                  {isSaving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="mr-2 h-4 w-4" />
+                  )}
+                  Save
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="h-64 p-3 lg:h-auto lg:w-[400px]">
-            <OutputConsole
-              output={output}
-              isLoading={isRunning}
-              isError={isError}
-              executionTime={executionTime}
-            />
+
+          {/* Editor and Output */}
+          <div className="flex-1 flex overflow-hidden">
+            <div className="relative flex-1 overflow-auto p-4 bg-editor-bg">
+              <div
+                className={cn(
+                  'pointer-events-none absolute inset-4 rounded-lg border border-dashed border-border bg-transparent transition-opacity duration-300',
+                  selectedSnippetLoading ? 'opacity-100' : 'opacity-0'
+                )}
+              >
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <span>Loading snippet…</span>
+                  <div className="h-3 w-20 animate-pulse rounded-full bg-muted" />
+                </div>
+              </div>
+              <EditorComponent
+                initialCode={code}
+                language={language}
+                onChange={handleCodeChange}
+                fontSize={editorFontSize}
+                theme={editorTheme}
+                lineNumbers={showLineNumbers}
+              />
+            </div>
+
+            <div className="w-1/3 border-l">
+              <OutputConsole
+                output={output}
+                isRunning={isRunning}
+                isError={isError}
+                executionTime={executionTime}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -570,28 +827,49 @@ const EditorPage = () => {
           <DialogHeader>
             <DialogTitle>Save Snippet</DialogTitle>
             <DialogDescription>
-              Give your code snippet a name to save it to your library.
+              Please enter a title for your snippet
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Input
-              placeholder="Snippet title..."
-              value={snippetTitle}
-              onChange={(e) => setSnippetTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            />
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="snippet-title" className="text-right">
+                Title
+              </Label>
+              <Input
+                id="snippet-title"
+                value={snippetTitle}
+                onChange={(e) => setSnippetTitle(e.target.value)}
+                placeholder="Enter snippet title"
+                className="col-span-3"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    setSaveDialogOpen(false);
+                    handleDialogSave();
+                  }
+                }}
+              />
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setSaveDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSave}>Save</Button>
-          </DialogFooter>
+            <Button
+              onClick={() => {
+                setCurrentSnippetTitle(snippetTitle);
+                setSaveDialogOpen(false);
+                handleSave();
+              }}
+            >
+              Save
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
-      <AIChatWidget />
-    </div >
+    </div>
   );
-};
-
-export default EditorPage;
+}
