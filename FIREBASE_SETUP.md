@@ -23,11 +23,13 @@
 3. Go to **Sign-in method** tab
 
 ### Enable Email/Password:
+
 - Click on "Email/Password"
 - Toggle **Enable**
 - Click "Save"
 
 ### Enable Google Sign-In:
+
 - Click on "Google"
 - Toggle **Enable**
 - Enter project support email
@@ -48,6 +50,7 @@ VITE_FIREBASE_APP_ID="1:123456789:web:abc123"
 ```
 
 **Where to find these values:**
+
 - Firebase Console > Project Settings > General
 - Scroll down to "Your apps" section
 - Click on your web app
@@ -72,18 +75,18 @@ service cloud.firestore {
     // Snippets collection
     match /snippets/{snippetId} {
       // Allow read if public or owned by user
-      allow read: if resource.data.visibility == 'public' 
+      allow read: if resource.data.visibility == 'public'
                   || resource.data.userId == request.auth.uid;
-      
+
       // Allow create if authenticated
-      allow create: if request.auth != null 
+      allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
-      
+
       // Allow update/delete only if owner
-      allow update, delete: if request.auth != null 
+      allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
     }
-    
+
     // User profiles collection (optional for future)
     match /users/{userId} {
       allow read: if true;
@@ -106,6 +109,7 @@ Click "Publish"
 ## Step 7: Test Your Setup
 
 1. Run your development server:
+
    ```bash
    npm run dev
    ```
@@ -118,20 +122,24 @@ Click "Publish"
 ## Troubleshooting
 
 ### "Firebase: Error (auth/unauthorized-domain)"
+
 - Add your domain to Authorized domains in Firebase Console
 - Make sure you're using the correct domain (check the error message)
 
 ### "Firebase: Error (auth/api-key-not-valid)"
+
 - Double-check your API key in `.env`
 - Make sure there are no extra spaces or quotes
 - Restart your dev server after changing `.env`
 
 ### Google Sign-In Not Working
+
 - Ensure Google provider is enabled in Firebase Console
 - Check that you've added a support email
 - Verify authorized domains include your current domain
 
 ### "Firebase: Error (auth/operation-not-allowed)"
+
 - Make sure Email/Password authentication is enabled
 - Check that the authentication method is properly configured
 
@@ -147,10 +155,12 @@ After Firebase is set up, you can:
 ## Firebase vs Supabase
 
 Currently, the project uses:
+
 - **Firebase**: Authentication (login/signup)
 - **Supabase**: Code execution (Edge Functions) and snippets storage
 
 You can either:
+
 1. Keep both (hybrid approach)
 2. Fully migrate to Firebase (requires migrating snippets to Firestore and code execution to Firebase Functions)
 3. Fully migrate to Supabase (requires updating auth to use Supabase Auth)

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import {
   Code2,
   Zap,
@@ -8,31 +8,56 @@ import {
   Languages,
   Save,
   Play,
-  Sparkles
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
+  Sparkles,
+  Share2,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Navbar from '@/components/Navbar';
 
 const features = [
   {
+    icon: Terminal,
+    title: 'Modern Editor',
+    description: 'VS Code–style Monaco with customizable themes, font size, and line numbers.',
+  },
+  {
+    icon: Zap,
+    title: 'Autosave & Controls',
+    description: 'Toggle autosave, get inline status, and always keep drafts safe.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Snippet Workflows',
+    description: 'Create, update, and organize reusable snippets with instant feedback.',
+  },
+  {
     icon: Languages,
-    title: "Multi-Language Support",
-    description: "Write code in 10 programming languages including Python, JavaScript, C/C++, Java, C#, Go, Ruby, PHP, and Bash with full syntax highlighting.",
+    title: 'Multi-Language Support',
+    description:
+      'Write code in 10 programming languages including Python, JavaScript, C/C++, Java, C#, Go, Ruby, PHP, and Bash with full syntax highlighting.',
   },
   {
     icon: Play,
-    title: "Instant Execution",
-    description: "Run your code instantly and see results in real-time with our powerful execution engine.",
+    title: 'Instant Execution',
+    description:
+      'Run your code instantly and see results in real-time with our powerful execution engine.',
   },
   {
     icon: Cloud,
-    title: "Cloud Storage",
-    description: "Save your code snippets securely in the cloud and access them from anywhere.",
+    title: 'Cloud Storage',
+    description:
+      'Save your code snippets securely in the cloud and access them from anywhere.',
   },
   {
     icon: Save,
-    title: "Snippet Library",
-    description: "Build your personal library of code snippets for quick reference and reuse.",
+    title: 'Snippet Library',
+    description:
+      'Build your personal library of code snippets for quick reference and reuse.',
+  },
+  {
+    icon: Share2,
+    title: 'Collaboration Ready',
+    description: 'Share snippets, pair-program in real time, and comment on saved work.',
   },
 ];
 
@@ -56,7 +81,9 @@ const Landing = () => {
             <div className="animate-slide-up">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm text-primary">Code anywhere, anytime</span>
+                <span className="text-sm text-primary">
+                  Code anywhere, anytime
+                </span>
               </div>
               <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight lg:text-6xl">
                 Write, Run, and
@@ -65,8 +92,9 @@ const Landing = () => {
                 in the Cloud
               </h1>
               <p className="mb-8 max-w-lg text-lg text-muted-foreground">
-                A powerful online code editor with multi-language support, instant execution,
-                and cloud storage. Start coding in seconds, no setup required.
+                A powerful online code editor with multi-language support,
+                instant execution, and cloud storage. Start coding in seconds,
+                no setup required.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link to="/editor">
@@ -85,13 +113,18 @@ const Landing = () => {
             </div>
 
             {/* Code Preview */}
-            <div className="animate-slide-up relative hidden lg:block" style={{ animationDelay: "0.2s" }}>
+            <div
+              className="animate-slide-up relative hidden lg:block"
+              style={{ animationDelay: '0.2s' }}
+            >
               <div className="glow-effect overflow-hidden rounded-xl border border-editor-border bg-editor-bg shadow-2xl">
                 <div className="flex items-center gap-2 border-b border-border bg-secondary/30 px-4 py-3">
                   <div className="h-3 w-3 rounded-full bg-destructive/70" />
                   <div className="h-3 w-3 rounded-full bg-warning/70" />
                   <div className="h-3 w-3 rounded-full bg-success/70" />
-                  <span className="ml-2 text-xs text-muted-foreground">fibonacci.js</span>
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    fibonacci.js
+                  </span>
                 </div>
                 <pre className="p-6 font-mono text-sm leading-relaxed">
                   <code className="text-foreground">{codeSnippet}</code>
@@ -101,7 +134,10 @@ const Landing = () => {
               <div className="animate-float absolute -right-6 -top-6 rounded-lg border border-primary/30 bg-card/80 p-3 shadow-lg backdrop-blur">
                 <Zap className="h-6 w-6 text-primary" />
               </div>
-              <div className="animate-float absolute -bottom-4 -left-4 rounded-lg border border-accent/30 bg-card/80 p-3 shadow-lg backdrop-blur" style={{ animationDelay: "1s" }}>
+              <div
+                className="animate-float absolute -bottom-4 -left-4 rounded-lg border border-accent/30 bg-card/80 p-3 shadow-lg backdrop-blur"
+                style={{ animationDelay: '1s' }}
+              >
                 <Code2 className="h-6 w-6 text-accent" />
               </div>
             </div>
@@ -117,8 +153,8 @@ const Landing = () => {
               Everything You Need to <span className="gradient-text">Code</span>
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
-              A complete development environment in your browser with all the tools you need to write,
-              test, and save your code.
+              A complete development environment in your browser with all the
+              tools you need to write, test, and save your code.
             </p>
           </div>
 
@@ -133,7 +169,9 @@ const Landing = () => {
                   <feature.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
@@ -148,10 +186,22 @@ const Landing = () => {
               Supported <span className="gradient-text">Languages</span>
             </h2>
             <p className="mx-auto mb-12 max-w-2xl text-muted-foreground">
-              Write code in your favorite programming language with full syntax highlighting and intelligent code completion.
+              Write code in your favorite programming language with full syntax
+              highlighting and intelligent code completion.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              {["JavaScript", "Python", "C", "C++", "Java", "C#", "Go", "Ruby", "PHP", "Bash"].map((lang) => (
+              {[
+                'JavaScript',
+                'Python',
+                'C',
+                'C++',
+                'Java',
+                'C#',
+                'Go',
+                'Ruby',
+                'PHP',
+                'Bash',
+              ].map((lang) => (
                 <div
                   key={lang}
                   className="rounded-xl border border-border bg-secondary/50 px-8 py-4 text-lg font-medium transition-all hover:border-primary/50 hover:bg-secondary"
@@ -171,7 +221,8 @@ const Landing = () => {
             Ready to Start <span className="gradient-text">Coding</span>?
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
-            Jump into the editor and start writing code immediately. No sign-up required.
+            Jump into the editor and start writing code immediately. No sign-up
+            required.
           </p>
           <Link to="/editor">
             <Button variant="glow" size="xl">
