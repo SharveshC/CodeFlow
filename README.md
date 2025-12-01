@@ -324,9 +324,15 @@ If port 8080 is in use, Vite will automatically try port 8081 or the next availa
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Authors
+## 👥 Contributors
 
-- **Sharvesh C** - [GitHub](https://github.com/SharveshC)
+Thanks to the contributors who built CodeFlow:
+
+- **Sharvesh C** — Creator & Lead Developer  
+  GitHub: [@SharveshC](https://github.com/SharveshC)
+
+- **Likhith** — Co-Developer (Frontend & Features)  
+  GitHub: [@likhith1253](https://github.com/likhith1253)
 
 ## 🙏 Acknowledgments
 
