@@ -342,10 +342,4 @@ Thanks to the contributors who built CodeFlow:
 - **Vite** - For blazing fast development experience
 - **React** - For the powerful UI framework
 
-## 📧 Contact
 
-For questions or support, please open an issue on GitHub or contact the maintainers.
-
----
-
-**Made with ❤️ by the CodeFlow Team**
