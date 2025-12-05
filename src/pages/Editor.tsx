@@ -297,25 +297,42 @@ export default function EditorPage() {
     setExecutionTime(undefined);
 
     try {
-      const startTime = performance.now();
-      // Simulate code execution (replace with actual execution logic)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const result = {
-        output: 'Hello, World!',
-        error: null,
-      };
-      const endTime = performance.now();
+      // Import Piston API service dynamically
+      const { executeCode } = await import('@/lib/piston');
 
-      setOutput(result.output);
-      setExecutionTime(Math.round(endTime - startTime));
-      setIsError(!!result.error);
+      // Execute code using Piston API
+      const result = await executeCode(code, language);
+
+      // Set output based on result
+      if (result.error) {
+        setIsError(true);
+        setOutput(result.error + (result.output ? '\n\n' + result.output : ''));
+      } else {
+        setIsError(false);
+        setOutput(result.output || '(No output)');
+      }
+
+      setExecutionTime(result.executionTime);
+
+      // Show success toast for successful execution
+      if (!result.error) {
+        toast({
+          title: 'Success',
+          description: `Code executed successfully in ${result.executionTime}ms`,
+        });
+      }
     } catch (error: any) {
       setIsError(true);
-      setOutput(error.message || 'An error occurred');
+      setOutput(error.message || 'An error occurred while executing code');
+      toast({
+        title: 'Execution Error',
+        description: error.message || 'Failed to execute code',
+        variant: 'destructive',
+      });
     } finally {
       setIsRunning(false);
     }
-  }, [code, toast]);
+  }, [code, language, toast]);
 
   // Handle save button click
   const doSave = useCallback(async (title: string, showToast = true, isAutoSave = false) => {
@@ -637,18 +654,13 @@ export default function EditorPage() {
                   onValueChange={(value) => {
                     const nextLanguage = value as Language;
                     const nextTemplate = defaultCode[nextLanguage];
-                    const currentTemplate = defaultCode[language as Language];
-                    // Load template if code is empty, matches current template, or is whitespace only
-                    const shouldLoadTemplate =
-                      !code ||
-                      !code.trim() ||
-                      code.trim() === currentTemplate.trim() ||
-                      code.trim() === nextTemplate.trim();
 
+                    // Always update language and load the template
                     setLanguage(nextLanguage);
-                    if (shouldLoadTemplate && nextTemplate) {
+                    if (nextTemplate) {
                       setCode(nextTemplate);
                     }
+
                     // Mark as unsaved when language changes
                     if (selectedSnippetId || currentSnippetTitle.trim()) {
                       setAutoSaveStatus('unsaved');
