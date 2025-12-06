@@ -1,82 +1,67 @@
 # 🚀 CodeFlow
 
-**CodeFlow** is a modern, cloud-based code editor and snippet management platform that allows developers to write, execute, and save code snippets across multiple programming languages. Built with React, TypeScript, and Firebase, CodeFlow provides a seamless coding experience with real-time execution and cloud storage.
+**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and Firebase, CodeFlow provides a seamless coding experience with AI assistance and cloud storage.
 
-![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-Code%20Editor-blue?style=for-the-badge&logo=react)
+![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
 ## ✨ Features
 
 ### 🎯 Core Features
-- **Multi-Language Support**: Write and execute code in 10+ programming languages including:
-  - JavaScript (Node.js)
-  - Python 3.8.1
-  - Java (OpenJDK 13.0.1)
-  - C (GCC 9.2.0)
-  - C++ (GCC 9.2.0)
-  - C# (Mono 6.6.0)
-  - Go 1.13.5
-  - Ruby 2.7.0
-  - PHP 7.4.1
-  - Bash 5.0.0
+- **AI-Powered Coding Assistant**: Get real-time code suggestions and completions
+- **Monaco Editor**: The same editor that powers VS Code
+- **Real-time Execution**: Run code directly in the browser
+- **Cloud Storage**: Save and manage your code snippets securely
+- **Theme Support**: Light and dark themes with system preference detection
 
 ### 💾 Snippet Management
-- **Save & Organize**: Save code snippets with custom titles
-- **Search & Filter**: Quickly find snippets by title, content, or language
-- **Auto-Save**: Automatic saving with visual status indicators
+- **Save & Organize**: Save and manage your code snippets
 - **User-Specific Storage**: Each user's snippets are private and secure
 - **Delete Protection**: Confirmation dialog before deleting snippets
 
 ### 🎨 Editor Features
-- **Monaco Editor**: Powered by the same editor as VS Code
-- **Syntax Highlighting**: Beautiful syntax highlighting for all supported languages
-- **Theme Options**: Choose from Dark, Light, or High Contrast themes
-- **Customizable Font Size**: Adjust font size from 12px to 24px
+- **Monaco Editor**: Full-featured code editor with IntelliSense
+- **Syntax Highlighting**: Beautiful syntax highlighting for multiple languages
+- **Theme Options**: Light and dark themes with system preference detection
 - **Line Numbers**: Toggle line numbers on/off
-- **Code Templates**: Pre-loaded templates for each language
 
 ### 🔐 Authentication
-- **Google Sign-In**: Secure authentication via Google OAuth
+- **Firebase Authentication**: Secure user authentication
 - **Email/Password**: Traditional email and password authentication
 - **Email Verification**: Verify email addresses for added security
 - **Password Reset**: Easy password recovery flow
 
 ### ⚡ Performance
-- **Real-Time Execution**: Run code and see output instantly
-- **Execution Time Tracking**: Monitor how long your code takes to run
+- **Optimized Build**: Built with Vite for fast development and production builds
+- **Efficient State Management**: React Context for global state
 - **Optimized Queries**: Efficient Firebase queries for fast snippet loading
-- **Auto-Save Debouncing**: Smart auto-save that doesn't slow you down
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **React 18.3.1** - Modern UI library
-- **TypeScript 5.8.3** - Type-safe development
-- **Vite 5.4.19** - Lightning-fast build tool
-- **React Router 6.30.1** - Client-side routing
-- **TailwindCSS 3.4.17** - Utility-first CSS framework
+- **React 18** - Modern UI library
+- **TypeScript** - Type-safe development
+- **Vite** - Lightning-fast build tool
+- **React Router** - Client-side routing
+- **TailwindCSS** - Utility-first CSS framework
 
 ### UI Components
-- **shadcn/ui** - Beautiful, accessible components built on Radix UI
+- **shadcn/ui** - Accessible components built on Radix UI
 - **Monaco Editor** - Professional code editor
 - **Lucide React** - Beautiful icon library
-- **Sonner** - Elegant toast notifications
 
 ### Backend & Database
-- **Firebase 12.6.0** - Backend-as-a-Service
+- **Firebase** - Backend-as-a-Service
   - **Firebase Authentication** - User authentication
   - **Cloud Firestore** - NoSQL database for snippets
-  - **Firebase Analytics** - Usage analytics
 
-### Additional Libraries
-- **date-fns** - Date formatting and manipulation
-- **react-markdown** - Markdown rendering
-- **@tanstack/react-query** - Data fetching and caching
-- **zod** - Schema validation
+### AI Integration
+- **Google Generative AI** - Powers the AI coding assistant
+- **React Query** - Data fetching and caching
 
 ## 📦 Installation
 
 ### Prerequisites
-- **Node.js** (v16 or higher)
+- **Node.js** (v18 or higher)
 - **npm** or **yarn** or **bun**
 - **Git**
 - **Firebase Account** (for backend services)
@@ -96,6 +81,24 @@
    yarn install
    # or
    bun install
+   ```
+
+3. **Set up Firebase**
+   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Set up Authentication (Email/Password)
+   - Create a Firestore database
+   - Get your Firebase configuration object
+
+4. **Configure Environment Variables**
+   Create a `.env` file in the root directory with your Firebase config:
+   ```env
+   VITE_FIREBASE_API_KEY=your-api-key
+   VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your-project-id
+   VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+   VITE_FIREBASE_APP_ID=your-app-id
+   VITE_GOOGLE_AI_API_KEY=your-google-ai-api-key
    ```
 
 3. **Configure Firebase**
