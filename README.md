@@ -286,19 +286,6 @@ service cloud.firestore {
 
 Contributions are welcome! Here's how you can help:
 
-### Adding Team Members to Firebase
-
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Select your project
-3. Click the ⚙️ gear icon → **Users and permissions**
-4. Click **Add member**
-5. Enter the teammate's Google email
-6. Assign role:
-   - **Editor** - For developers (recommended)
-   - **Viewer** - For read-only access
-   - **Owner** - For full control
-7. Click **Add member**
-
 ### Development Workflow
 
 1. Fork the repository
@@ -329,20 +316,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Contributors
 
-Thanks to the contributors who built CodeFlow:
-
 - **Sharvesh C** — Creator & Lead Developer  
   GitHub: [@SharveshC](https://github.com/SharveshC)
 
 - **Likhith** — Co-Developer (Frontend & Features)  
   GitHub: [@likhith1253](https://github.com/likhith1253)
 
-## 🙏 Acknowledgments
-
-- **Monaco Editor** - For the amazing code editor
-- **Firebase** - For backend infrastructure
-- **shadcn/ui** - For beautiful UI components
-- **Vite** - For blazing fast development experience
-- **React** - For the powerful UI framework
 
 
