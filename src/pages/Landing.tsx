@@ -240,7 +240,7 @@ const Landing = () => {
             <Code2 className="h-5 w-5 text-primary" />
             <span className="font-semibold">CodeFlow</span>
           </div>
-          <p>© 2024 CodeFlow. Built for developers, by developers.</p>
+          <p>©Built for developers, by developers.</p>
         </div>
       </footer>
     </div>
