@@ -3,6 +3,10 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useState } from 'react';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+
+interface CustomError extends Error {
+  code?: string;
+}
 import { useToast } from './ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
@@ -117,7 +121,26 @@ export function AuthModal({
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
-      throw error;
+      let errorMessage = 'An error occurred during sign up. Please try again.';
+      
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'This email is already in use. Please use a different email or sign in instead.';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Please enter a valid email address.';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password should be at least 6 characters long.';
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = 'Email/password accounts are not enabled.';
+          break;
+      }
+      
+      const errorWithCustomMessage = new Error(errorMessage) as CustomError;
+      errorWithCustomMessage.code = error.code;
+      throw errorWithCustomMessage;
     }
   };
 

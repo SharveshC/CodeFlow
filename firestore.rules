@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow users to read and write to their own snippets
+    match /snippets/{snippetId} {
+      allow read, update, delete: if request.auth != null && (
+        (resource.data.keys().hasAll(['user_id']) && request.auth.uid == resource.data.user_id) ||
+        (resource.data.keys().hasAll(['userId']) && request.auth.uid == resource.data.userId)
+      );
+      allow create: if request.auth != null && (
+        (request.resource.data.keys().hasAll(['user_id']) && request.resource.data.user_id == request.auth.uid) ||
+        (request.resource.data.keys().hasAll(['userId']) && request.resource.data.userId == request.auth.uid)
+      );
+    }
+    
+    // Allow users to read all snippets (for listing)
+    match /snippets/{snippetId} {
+      allow read: if request.auth != null;
+    }
+  }
+}
