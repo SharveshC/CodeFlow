@@ -340,11 +340,20 @@ Contributions are welcome! Here's how you can help:
 
 ## 🐛 Known Issues & Fixes
 
+### Code Execution API Error
+- **Issue**: Piston API became whitelist-only on Feb 15, 2026
+- **Fix**: Migrated to Judge0 API which has no restrictions
+- **Status**: ✅ Resolved
+
 ### Firestore Query Index Error
-If you see an error about missing indexes when loading snippets, the app now handles this by sorting snippets in JavaScript instead of using Firestore's `orderBy`. This was fixed in commit `a5d4fd2`.
+- **Issue**: Missing indexes when loading snippets
+- **Fix**: Added proper indexes in `firestore.indexes.json`
+- **Status**: ✅ Resolved
 
 ### Port Already in Use
-If port 8080 is in use, Vite will automatically try port 8081 or the next available port.
+- **Issue**: Port 8080 might be in use
+- **Fix**: Vite automatically tries port 8081 or next available port
+- **Status**: ✅ Auto-handled
 
 ## 📝 License
 
