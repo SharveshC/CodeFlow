@@ -96,12 +96,12 @@
 
 3. **Set up Firebase**
    - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Set up Authentication (Email/Password)
+   - Set up Authentication (Email/Password and Google)
    - Create a Firestore database
    - Get your Firebase configuration object
 
 4. **Configure Environment Variables**
-   Create a `.env` file in the root directory with your Firebase config:
+   Create a `.env` file in root directory with your Firebase config:
    ```env
    VITE_FIREBASE_API_KEY=your-api-key
    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
@@ -112,42 +112,22 @@
    VITE_GOOGLE_AI_API_KEY=your-google-ai-api-key
    ```
 
-3. **Configure Firebase**
-   
-   Create a `.env` file in the root directory with your Firebase credentials:
-   ```env
-   VITE_FIREBASE_API_KEY=your_api_key
-   VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-   VITE_FIREBASE_PROJECT_ID=your_project_id
-   VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-   VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-   VITE_FIREBASE_APP_ID=your_app_id
-   VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
-   ```
-
-   **Note**: The current Firebase configuration is in `src/lib/firebase.ts`. For production, use environment variables instead of hardcoded values.
-
-4. **Set Up Firestore Database**
+5. **Set Up Firestore Database**
    
    In your Firebase Console:
    - Go to **Firestore Database**
    - Create a database in production mode
-   - Create a collection named `snippets`
-   - Set up the following security rules:
+   - Create collections named `snippets` and `folders`
+   - Deploy the security rules from `firestore.rules`
 
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /snippets/{snippetId} {
-         allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-         allow create: if request.auth != null;
-       }
-     }
-   }
+6. **Deploy Firestore Security Rules**
+   ```bash
+   firebase login
+   firebase init firestore
+   firebase deploy --only firestore:rules
    ```
 
-5. **Run the Development Server**
+7. **Run Development Server**
    ```bash
    npm run dev
    ```
@@ -165,37 +145,41 @@
 ### Getting Started
 
 1. **Sign Up / Login**
-   - Navigate to the landing page
+   - Navigate to landing page
    - Click "Get Started" or "Login"
    - Sign in with Google or create an account with email/password
+   - Enhanced error messages guide you through any issues
 
 2. **Write Code**
-   - Select a programming language from the dropdown
-   - Write or paste your code in the Monaco editor
-   - Use the toolbar to customize theme, font size, and line numbers
+   - Select a programming language from dropdown (15+ languages supported)
+   - Write or paste your code in Monaco editor
+   - Use toolbar to customize theme, font size, and line numbers
 
 3. **Run Code**
-   - Click the "Run" button or press `F5` or `Ctrl+Enter`
-   - View output in the console panel
+   - Click "Run" button or press `F5` or `Ctrl+Enter`
+   - View output in console panel
    - See execution time for performance monitoring
+   - Code execution powered by Judge0 API
 
 4. **Save Snippets**
    - Enter a title for your snippet
+   - Optionally select a folder or create a new one
    - Click "Save" or press `Ctrl+S`
+   - Duplicate names automatically get timestamp appended
    - Auto-save will save changes automatically after 2 seconds of inactivity
 
 5. **Manage Snippets**
-   - View all your snippets in the left sidebar
-   - Use the search bar to find specific snippets
+   - View all your snippets in left sidebar
+   - Navigate through folder structure
+   - Use search bar to find specific snippets
    - Filter by programming language
    - Click on a snippet to load it
-   - Hover over a snippet and click the trash icon to delete
+   - Hover over a snippet and click trash icon to delete (with confirmation)
 
 ### Keyboard Shortcuts
 
 - `Ctrl+S` / `Cmd+S` - Save current snippet
 - `F5` - Run code
-- `Ctrl+Enter` - Run code (alternative)
 
 ## 📁 Project Structure
 
