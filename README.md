@@ -316,10 +316,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Contributors
 
-- **Sharvesh C** — Creator & Lead Developer  
+- **Sharvesh C**  
   GitHub: [@SharveshC](https://github.com/SharveshC)
 
-- **Likhith** — Co-Developer (Frontend & Features)  
+- **Likhith**  
   GitHub: [@likhith1253](https://github.com/likhith1253)
 
 
