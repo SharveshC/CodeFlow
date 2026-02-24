@@ -237,41 +237,53 @@ CodeFlow/
 {
   id: string;              // Auto-generated document ID
   title: string;           // Snippet title
-  content: string;         // Code content
+  code: string;            // Code content
   language: string;        // Programming language
-  userId: string;          // User ID (from Firebase Auth)
-  createdAt: Timestamp;    // Creation timestamp
-  updatedAt: Timestamp;    // Last update timestamp
+  user_id: string;         // User ID (from Firebase Auth)
+  created_at: Timestamp;    // Creation timestamp
+  updated_at: Timestamp;    // Last update timestamp
   tags?: string[];         // Optional tags
-  folder?: string;         // Optional folder/category
+  folder?: string;         // Optional folder name
+  folder_path?: string[];  // Full folder path
   is_favorite?: boolean;   // Optional favorite flag
+  original_title?: string;  // Original title before timestamp
+}
+```
+
+**Collection: `folders`**
+```typescript
+{
+  id: string;              // Auto-generated document ID (path-based)
+  name: string;            // Folder name
+  path: string[];          // Full path to folder
+  user_id: string;         // User ID (from Firebase Auth)
+  created_at: Timestamp;    // Creation timestamp
+  updated_at: Timestamp;    // Last update timestamp
 }
 ```
 
 ### Security Rules
 
-Ensure your Firestore security rules allow users to only access their own snippets:
-
+Current security rules in `firestore.rules`:
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow users to read and write to their own snippets
     match /snippets/{snippetId} {
-      // Users can read their own snippets
-      allow read: if request.auth != null && 
-                     request.auth.uid == resource.data.userId;
-      
-      // Users can create snippets
-      allow create: if request.auth != null && 
-                       request.auth.uid == request.resource.data.userId;
-      
-      // Users can update their own snippets
-      allow update: if request.auth != null && 
-                       request.auth.uid == resource.data.userId;
-      
-      // Users can delete their own snippets
-      allow delete: if request.auth != null && 
-                       request.auth.uid == resource.data.userId;
+      allow read, update, delete: if request.auth != null && (
+        (resource.data.keys().hasAll(['user_id']) && request.auth.uid == resource.data.user_id) ||
+        (resource.data.keys().hasAll(['userId']) && request.auth.uid == resource.data.userId)
+      );
+      allow create: if request.auth != null && (
+        (request.resource.data.keys().hasAll(['user_id']) && request.resource.data.user_id == request.auth.uid) ||
+        (request.resource.data.keys().hasAll(['userId']) && request.resource.data.userId == request.auth.uid)
+      );
+    }
+    
+    // Allow users to read all snippets (for listing)
+    match /snippets/{snippetId} {
+      allow read: if request.auth != null;
     }
   }
 }
