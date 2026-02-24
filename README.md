@@ -338,23 +338,6 @@ Contributions are welcome! Here's how you can help:
 - Write meaningful commit messages
 - Add comments for complex logic
 
-## 🐛 Known Issues & Fixes
-
-### Code Execution API Error
-- **Issue**: Piston API became whitelist-only on Feb 15, 2026
-- **Fix**: Migrated to Judge0 API which has no restrictions
-- **Status**: ✅ Resolved
-
-### Firestore Query Index Error
-- **Issue**: Missing indexes when loading snippets
-- **Fix**: Added proper indexes in `firestore.indexes.json`
-- **Status**: ✅ Resolved
-
-### Port Already in Use
-- **Issue**: Port 8080 might be in use
-- **Fix**: Vite automatically tries port 8081 or next available port
-- **Status**: ✅ Auto-handled
-
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
