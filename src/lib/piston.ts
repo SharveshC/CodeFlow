@@ -1,21 +1,25 @@
-// Piston API Service for Code Execution
-// API Documentation: https://github.com/engineer-man/piston
+// Judge0 API Service for Code Execution
+// API Documentation: https://ce.judge0.com/
+const JUDGE0_API_URL = 'https://ce.judge0.com/';
 
-const PISTON_API_URL = 'https://emkc.org/api/v2/piston';
-
-// Language mapping from CodeFlow to Piston
-// Piston uses language names and versions
-const languageMap: Record<string, { language: string; version: string }> = {
-  javascript: { language: 'javascript', version: '18.15.0' },
-  python: { language: 'python', version: '3.10.0' },
-  java: { language: 'java', version: '15.0.2' },
-  c: { language: 'c', version: '10.2.0' },
-  cpp: { language: 'c++', version: '10.2.0' },
-  csharp: { language: 'csharp', version: '6.12.0' },
-  go: { language: 'go', version: '1.16.2' },
-  ruby: { language: 'ruby', version: '3.0.1' },
-  php: { language: 'php', version: '8.2.3' },
-  bash: { language: 'bash', version: '5.2.0' },
+// Language mapping from CodeFlow to Judge0
+// Judge0 uses language IDs
+const languageMap: Record<string, number> = {
+  javascript: 63,
+  python: 71,
+  java: 62,
+  c: 50,
+  cpp: 54,
+  csharp: 51,
+  ruby: 72,
+  go: 79,
+  rust: 73,
+  php: 68,
+  typescript: 74,
+  kotlin: 77,
+  swift: 83,
+  r: 80,
+  sql: 86,
 };
 
 export interface ExecutionResult {
@@ -25,113 +29,132 @@ export interface ExecutionResult {
   isCompileError?: boolean;
 }
 
-export interface PistonResponse {
-  language: string;
-  version: string;
-  run: {
-    stdout: string;
-    stderr: string;
-    code: number;
-    signal: string | null;
-    output: string;
+export interface Judge0Response {
+  token: string;
+  stdout?: string;
+  stderr?: string;
+  compile_output?: string;
+  message?: string;
+  status?: {
+    id: number;
+    description: string;
   };
-  compile?: {
-    stdout: string;
-    stderr: string;
-    code: number;
-    signal: string | null;
-    output: string;
-  };
+  time?: string;
+  memory?: string;
 }
 
 /**
- * Execute code using Piston API
+ * Execute code using Judge0 API
  * @param code - The source code to execute
  * @param language - The programming language (CodeFlow format)
  * @returns ExecutionResult with output or error
  */
-export async function executeCode(
-  code: string,
-  language: string
-): Promise<ExecutionResult> {
-  // Check if language is supported
-  const langConfig = languageMap[language.toLowerCase()];
-  if (!langConfig) {
+export async function executeCode(code: string, language: string): Promise<ExecutionResult> {
+  const langId = languageMap[language];
+
+  if (!langId) {
     return {
       output: '',
-      error: `Language "${language}" is not supported by Piston API`,
+      error: `Language "${language}" is not supported by Judge0 API`,
     };
   }
 
   try {
     const startTime = performance.now();
 
-    const response = await fetch(`${PISTON_API_URL}/execute`, {
+    // Submit the code for execution
+    const response = await fetch(`${JUDGE0_API_URL}submissions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        language: langConfig.language,
-        version: langConfig.version,
-        files: [
-          {
-            name: getFileName(language),
-            content: code,
-          },
-        ],
+        source_code: code,
+        language_id: langId,
         stdin: '',
-        args: [],
-        compile_timeout: 10000, // 10 seconds
-        run_timeout: 3000, // 3 seconds
-        compile_memory_limit: -1,
-        run_memory_limit: -1,
+        expected_output: null,
+        cpu_time_limit: 2,
+        memory_limit: 128000,
       }),
     });
 
-    const endTime = performance.now();
-    const executionTime = Math.round(endTime - startTime);
-
     if (!response.ok) {
-      const errorText = await response.text();
       return {
         output: '',
-        error: `API Error (${response.status}): ${errorText}`,
-        executionTime,
+        error: `Failed to execute code: ${response.status} ${response.statusText}`,
       };
     }
 
-    const data: PistonResponse = await response.json();
+    const submitData = await response.json();
+    const token = submitData.token;
 
-    // Check for compilation errors
-    if (data.compile && data.compile.code !== 0) {
+    // Poll for the result
+    let result: Judge0Response | null = null;
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const resultResponse = await fetch(`${JUDGE0_API_URL}submissions/${token}`);
+      
+      if (resultResponse.ok) {
+        result = await resultResponse.json();
+        
+        if (result.status?.id >= 3) {
+          break;
+        }
+      }
+      
+      attempts++;
+    }
+
+    if (!result) {
       return {
-        output: data.compile.output || data.compile.stderr,
-        error: 'Compilation failed',
+        output: '',
+        error: 'Execution timed out',
+      };
+    }
+
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+
+    // Process the result
+    if (result.status?.id === 3) {
+      // Success
+      return {
+        output: result.stdout || '',
+        error: null,
+        isCompileError: false,
         executionTime,
+      };
+    } else if (result.status?.id === 6) {
+      // Compile error
+      return {
+        output: '',
+        error: result.compile_output || 'Compilation error',
         isCompileError: true,
+        executionTime,
       };
-    }
-
-    // Check for runtime errors
-    if (data.run.code !== 0) {
-      const errorOutput = data.run.stderr || data.run.output;
+    } else if (result.status?.id === 5) {
+      // Runtime error
       return {
-        output: errorOutput,
-        error: `Runtime error (exit code: ${data.run.code})`,
+        output: '',
+        error: result.stderr || 'Runtime error',
+        isCompileError: false,
+        executionTime,
+      };
+    } else {
+      // Other error
+      return {
+        output: '',
+        error: result.message || result.stderr || 'Execution failed',
+        isCompileError: false,
         executionTime,
       };
     }
-
-    // Success - return stdout
-    const output = data.run.stdout || data.run.output || '(No output)';
-    return {
-      output: output.trim(),
-      error: null,
-      executionTime,
-    };
   } catch (error) {
-    console.error('Piston API Error:', error);
+    console.error('Judge0 API Error:', error);
     return {
       output: '',
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -159,18 +182,18 @@ function getFileName(language: string): string {
 }
 
 /**
- * Get list of available Piston runtimes
+ * Get list of available Judge0 languages
  * Useful for debugging or showing available languages
  */
 export async function getAvailableRuntimes(): Promise<any[]> {
   try {
-    const response = await fetch(`${PISTON_API_URL}/runtimes`);
+    const response = await fetch(`${JUDGE0_API_URL}languages`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch runtimes: ${response.status}`);
+      throw new Error(`Failed to fetch languages: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
-    console.error('Error fetching Piston runtimes:', error);
+    console.error('Error fetching Judge0 languages:', error);
     return [];
   }
 }
