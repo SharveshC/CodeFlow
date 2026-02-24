@@ -289,6 +289,35 @@ service cloud.firestore {
 }
 ```
 
+## 🚀 Recent Updates
+
+### v2.0.0 - Major Updates
+- ✅ **Judge0 API Integration**: Migrated from Piston API to avoid whitelist restrictions
+- ✅ **Folder Organization**: Added nested folder support for snippets
+- ✅ **Duplicate Handling**: Automatic timestamp appending for duplicate names
+- ✅ **Enhanced Authentication**: Better error messages for auth issues
+- ✅ **Delete Protection**: Ownership verification before deletion
+- ✅ **TypeScript Organization**: Separated types into dedicated folder
+- ✅ **Security Rules**: Updated to handle both `user_id` and `userId` fields
+- ✅ **UI Improvements**: Removed Lovable branding, added custom preview support
+
+### Supported Languages
+- JavaScript (Node.js 18.15.0)
+- Python (3.10.0)
+- Java (15.0.2)
+- C (10.2.0)
+- C++ (10.2.0)
+- C# (6.12.0)
+- Ruby (3.0.0)
+- Go (1.16.0)
+- Rust (1.56.0)
+- PHP (8.0.0)
+- TypeScript (4.5.0)
+- Kotlin (1.6.0)
+- Swift (5.5.0)
+- R (4.1.0)
+- SQL (3.0.0)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:
