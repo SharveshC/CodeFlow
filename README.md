@@ -1,6 +1,6 @@
 # 🚀 CodeFlow
 
-**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and Firebase, CodeFlow provides a seamless coding experience with AI assistance and cloud storage.
+**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and Firebase, CodeFlow provides a seamless coding experience with AI assistance, folder organization, and cloud storage.
 
 ![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
@@ -9,14 +9,16 @@
 ### 🎯 Core Features
 - **AI-Powered Coding Assistant**: Get real-time code suggestions and completions
 - **Monaco Editor**: The same editor that powers VS Code
-- **Real-time Execution**: Run code directly in the browser
+- **Real-time Execution**: Run code directly in browser using Judge0 API
 - **Cloud Storage**: Save and manage your code snippets securely
 - **Theme Support**: Light and dark themes with system preference detection
 
 ### 💾 Snippet Management
-- **Save & Organize**: Save and manage your code snippets
+- **Save & Organize**: Save and manage your code snippets with folder support
+- **Folder Organization**: Create nested folder structures for better organization
+- **Duplicate Handling**: Automatically appends timestamps to duplicate snippet names
 - **User-Specific Storage**: Each user's snippets are private and secure
-- **Delete Protection**: Confirmation dialog before deleting snippets
+- **Delete Protection**: Confirmation dialog before deleting snippets with ownership verification
 
 ### 🎨 Editor Features
 - **Monaco Editor**: Full-featured code editor with IntelliSense
@@ -25,15 +27,17 @@
 - **Line Numbers**: Toggle line numbers on/off
 
 ### 🔐 Authentication
-- **Firebase Authentication**: Secure user authentication
+- **Firebase Authentication**: Secure user authentication with enhanced error handling
 - **Email/Password**: Traditional email and password authentication
+- **Google Sign-in**: One-click Google authentication
 - **Email Verification**: Verify email addresses for added security
 - **Password Reset**: Easy password recovery flow
+- **User-Friendly Errors**: Clear error messages for common auth issues
 
 ### ⚡ Performance
 - **Optimized Build**: Built with Vite for fast development and production builds
 - **Efficient State Management**: React Context for global state
-- **Optimized Queries**: Efficient Firebase queries for fast snippet loading
+- **Optimized Queries**: Efficient Firebase queries with proper indexing
 
 ## 🛠️ Tech Stack
 
@@ -53,9 +57,16 @@
 - **Firebase** - Backend-as-a-Service
   - **Firebase Authentication** - User authentication
   - **Cloud Firestore** - NoSQL database for snippets
+  - **Firestore Security Rules** - Data access control
+
+### Code Execution
+- **Judge0 API** - Reliable code execution service
+  - Supports 15+ programming languages
+  - Asynchronous execution with polling
+  - No whitelist restrictions
 
 ### AI Integration
-- **Google Generative AI** - Powers the AI coding assistant
+- **Google Generative AI** - Powers AI coding assistant
 - **React Query** - Data fetching and caching
 
 ## 📦 Installation
