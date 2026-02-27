@@ -72,8 +72,6 @@ const defaultCode: Record<Language, string> = {
   ruby: '# Ruby 2.7.0 Example\ndef greet(name)\n  "Hello, #{name}!"\nend\n\nputs greet("World")',
 
   php: '<?php\n// PHP 7.4.1 Example\nfunction greet($name) {\n    return "Hello, $name!";\n}\n\necho greet("World");\n?>',
-
-  bash: '#!/bin/bash\n# Bash 5.0.0 Example\ngreet() {\n    echo "Hello, $1!"\n}\n\ngreet "World"'
 };
 
 const editorThemeOptions = [

@@ -53,7 +53,6 @@ const languageColors: Record<string, string> = {
   rust: 'bg-orange-700/20 text-orange-200',
   r: 'bg-blue-400/20 text-blue-300',
   perl: 'bg-purple-600/20 text-purple-300',
-  bash: 'bg-green-500/20 text-green-400',
   sql: 'bg-pink-500/20 text-pink-400',
   scala: 'bg-red-600/20 text-red-300',
   haskell: 'bg-purple-700/20 text-purple-200',
