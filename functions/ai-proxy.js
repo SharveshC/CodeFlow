@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-// Initialize Google AI with server-side API key
+// Initialize Google AI with server-side API key from environment
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
 
 // CORS configuration
@@ -23,6 +23,11 @@ exports.aiChat = functions.https.onRequest((req, res) => {
       // Validate input
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: 'Invalid message' });
+      }
+
+      // Check if API key is available
+      if (!process.env.GOOGLE_AI_API_KEY) {
+        return res.status(500).json({ error: 'AI service not configured' });
       }
 
       // Initialize the model
@@ -64,6 +69,7 @@ exports.aiHealth = functions.https.onRequest((req, res) => {
   res.json({
     status: 'healthy',
     service: 'AI Proxy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    apiKeyConfigured: !!process.env.GOOGLE_AI_API_KEY
   });
 });
