@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { auth } from '@/integrations/firebase/client';
+import { auth } from '@/integrations/firebase/config';
 import { updatePassword, confirmPasswordReset, verifyPasswordResetCode, signInWithEmailAndPassword } from 'firebase/auth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
