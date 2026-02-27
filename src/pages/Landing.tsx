@@ -34,7 +34,7 @@ const features = [
     icon: Languages,
     title: 'Multi-Language Support',
     description:
-      'Write code in 10 programming languages including Python, JavaScript, C/C++, Java, C#, Go, Ruby, PHP, and Bash with full syntax highlighting.',
+      'Write code in 9 programming languages including Python, JavaScript, C/C++, Java, C#, Go, Ruby, and PHP with full syntax highlighting.',
   },
   {
     icon: Play,
@@ -200,7 +200,6 @@ const Landing = () => {
                 'Go',
                 'Ruby',
                 'PHP',
-                'Bash',
               ].map((lang) => (
                 <div
                   key={lang}

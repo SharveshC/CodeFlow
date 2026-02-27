@@ -48,11 +48,10 @@ const languageOptions = [
   { value: 'go', label: 'Go 1.13.5' },
   { value: 'ruby', label: 'Ruby 2.7.0' },
   { value: 'php', label: 'PHP 7.4.1' },
-  { value: 'bash', label: 'Bash 5.0.0' },
 ];
 
 // Supported language types
-type Language = 'javascript' | 'python' | 'java' | 'c' | 'cpp' | 'csharp' | 'go' | 'ruby' | 'php' | 'bash';
+type Language = 'javascript' | 'python' | 'java' | 'c' | 'cpp' | 'csharp' | 'go' | 'ruby' | 'php';
 
 // Default code templates
 const defaultCode: Record<Language, string> = {
