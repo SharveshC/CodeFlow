@@ -44,7 +44,7 @@
 ### Frontend
 - **React 18** - Modern UI library
 - **TypeScript** - Type-safe development
-- **Vite** - Lightning-fast build tool
+- **Vite 5.4.10** - Lightning-fast build tool (downgraded for Windows compatibility)
 - **React Router** - Client-side routing
 - **TailwindCSS** - Utility-first CSS framework
 
@@ -291,6 +291,20 @@ service cloud.firestore {
 
 ## 🚀 Recent Updates
 
+### v2.1.0 - Critical Fixes (Latest)
+- ✅ **JSX Runtime Issue Fixed**: Resolved "react/jsx-runtime module not found" error
+  - Reinstalled dependencies to fix React types resolution
+  - Updated TypeScript configuration for proper JSX runtime support
+- ✅ **Vite Build Issue Fixed**: Resolved Windows file system error with Vite 7.3.1
+  - Downgraded Vite from 7.3.1 to 5.4.10 for Windows compatibility
+  - Fixed `EISDIR: illegal operation on a directory` build error
+- ✅ **TypeScript Compilation**: Fixed Firestore WriteBatch API usage
+  - Removed private `_mutations` property access
+  - Updated to use proper Firestore batch operations
+- ✅ **Production Build**: Successfully deployed to Firebase Hosting
+  - Build process now works correctly on Windows
+  - Production deployment verified at https://codeflow-306fc.web.app
+
 ### v2.0.0 - Major Updates
 - ✅ **Judge0 API Integration**: Migrated from Piston API to avoid whitelist restrictions
 - ✅ **Folder Organization**: Added nested folder support for snippets
@@ -338,7 +352,49 @@ Contributions are welcome! Here's how you can help:
 - Write meaningful commit messages
 - Add comments for complex logic
 
-## 📝 License
+## � Troubleshooting
+
+### Common Issues & Solutions
+
+#### JSX Runtime Error
+**Problem**: `This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found`
+
+**Solution**:
+```bash
+npm install  # Reinstall dependencies to fix React types
+```
+
+#### Vite Build Error on Windows
+**Problem**: `EISDIR: illegal operation on a directory, read file: index.html`
+
+**Solution**: This issue occurs with Vite 7.3.1 on Windows. The project uses Vite 5.4.10 for compatibility.
+
+#### TypeScript Compilation Errors
+**Problem**: TypeScript errors related to Firestore or React types
+
+**Solution**:
+```bash
+npx tsc --project tsconfig.app.json --noEmit  # Check TypeScript errors
+npm run build  # Verify build works
+```
+
+#### Development Server Issues
+**Problem**: Dev server not starting or port conflicts
+
+**Solution**:
+```bash
+npm run dev  # Starts on port 8080
+# If port 8080 is occupied, the server will automatically use the next available port
+```
+
+### Development Workflow
+After making changes:
+1. **Test locally**: `npm run dev`
+2. **Check TypeScript**: `npx tsc --project tsconfig.app.json --noEmit`
+3. **Build verification**: `npm run build`
+4. **Deploy**: `firebase deploy`
+
+## �📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
