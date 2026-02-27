@@ -44,7 +44,7 @@
 ### Frontend
 - **React 18** - Modern UI library
 - **TypeScript** - Type-safe development
-- **Vite 5.4.10** - Lightning-fast build tool (downgraded for Windows compatibility)
+- **Vite 5.4.10** - Lightning-fast build tool
 - **React Router** - Client-side routing
 - **TailwindCSS** - Utility-first CSS framework
 
