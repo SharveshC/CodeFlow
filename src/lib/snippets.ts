@@ -69,9 +69,9 @@ async function ensureFolderPathExists(folderPath: string[], userId: string): Pro
   }
   
   // Commit all folder creations in a single batch
-  if (batch._mutations.length > 0) {
-    await batch.commit();
-  }
+  // Note: Firestore WriteBatch doesn't expose a way to check if it has mutations
+  // So we'll always commit - this is safe as an empty batch is a no-op
+  await batch.commit();
 }
 
 export async function saveSnippet(
