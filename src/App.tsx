@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AIChatWidget from './components/AIChatWidget';
 import Landing from './pages/Landing';
 import Editor from './pages/Editor';
 import Login from './pages/Login';
@@ -41,6 +42,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <AIChatWidget />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
