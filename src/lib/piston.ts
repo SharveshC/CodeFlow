@@ -12,7 +12,7 @@ const languageMap: Record<string, number> = {
   cpp: 54,
   csharp: 51,
   ruby: 72,
-  go: 79,
+  go: 60,
   rust: 73,
   php: 68,
   typescript: 74,
