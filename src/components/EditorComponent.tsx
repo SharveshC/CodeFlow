@@ -27,7 +27,6 @@ const languageMap: Record<string, string> = {
   rust: 'rust',
   r: 'r',
   perl: 'perl',
-  bash: 'shell',
   sql: 'sql',
   scala: 'scala',
   haskell: 'haskell',

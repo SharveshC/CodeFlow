@@ -176,7 +176,6 @@ function getFileName(language: string): string {
     go: 'main.go',
     ruby: 'main.rb',
     php: 'main.php',
-    bash: 'main.sh',
   };
   return fileNames[language.toLowerCase()] || 'main.txt';
 }
