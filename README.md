@@ -301,9 +301,6 @@ service cloud.firestore {
 - ✅ **TypeScript Compilation**: Fixed Firestore WriteBatch API usage
   - Removed private `_mutations` property access
   - Updated to use proper Firestore batch operations
-- ✅ **Production Build**: Successfully deployed to Firebase Hosting
-  - Build process now works correctly on Windows
-  - Production deployment verified at https://codeflow-306fc.web.app
 
 ### v2.0.0 - Major Updates
 - ✅ **Judge0 API Integration**: Migrated from Piston API to avoid whitelist restrictions
@@ -322,15 +319,9 @@ service cloud.firestore {
 - C (10.2.0)
 - C++ (10.2.0)
 - C# (6.12.0)
-- Ruby (3.0.0)
 - Go (1.16.0)
 - Rust (1.56.0)
 - PHP (8.0.0)
-- TypeScript (4.5.0)
-- Kotlin (1.6.0)
-- Swift (5.5.0)
-- R (4.1.0)
-- SQL (3.0.0)
 
 ## 🤝 Contributing
 
