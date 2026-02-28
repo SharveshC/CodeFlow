@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { cn } from '@/lib/utils';
 import EditorComponent from '@/components/EditorComponent';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import AIChatWidget from '@/components/AIChatWidget';
 
 // Define the Snippet interface
 interface Snippet {
@@ -845,6 +846,9 @@ export default function EditorPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Chat Widget */}
+      <AIChatWidget currentCode={code} currentLanguage={language} />
 
       {/* Save Dialog */}
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
