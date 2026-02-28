@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
-// import AIChatWidget from './components/AIChatWidget'; // Disabled for security
 import Landing from './pages/Landing';
 import Editor from './pages/Editor';
 import Login from './pages/Login';
@@ -22,7 +21,7 @@ const ErrorFallback = ({ error, resetErrorBoundary }: { error: Error; resetError
     <div className="text-center p-8">
       <h2 className="text-2xl font-bold text-destructive mb-4">Oops! Something went wrong</h2>
       <p className="text-muted-foreground mb-6">We encountered an unexpected error. Please try again.</p>
-      <button 
+      <button
         onClick={resetErrorBoundary}
         className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
       >
@@ -42,7 +41,6 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            {/* <AIChatWidget /> */} {/* Disabled for security - API key protection */}
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
