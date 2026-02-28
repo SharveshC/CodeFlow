@@ -319,15 +319,9 @@ service cloud.firestore {
 - C (10.2.0)
 - C++ (10.2.0)
 - C# (6.12.0)
-- Ruby (3.0.0)
 - Go (1.16.0)
 - Rust (1.56.0)
 - PHP (8.0.0)
-- TypeScript (4.5.0)
-- Kotlin (1.6.0)
-- Swift (5.5.0)
-- R (4.1.0)
-- SQL (3.0.0)
 
 ## 🤝 Contributing
 
