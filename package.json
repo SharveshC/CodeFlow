@@ -8,7 +8,6 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "migrate:snippets-userid": "node ./scripts/migrate-snippets-userid.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -70,10 +69,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@prettier/plugin-php": "^0.24.0",
-    "@prettier/plugin-pug": "^3.4.2",
-    "@prettier/plugin-ruby": "^4.0.4",
-    "@prettier/plugin-xml": "^3.4.2",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.19.1",
     "@types/react": "^18.3.27",
