@@ -220,8 +220,7 @@ const Landing = () => {
             Ready to Start <span className="gradient-text">Coding</span>?
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-muted-foreground">
-            Jump into the editor and start writing code immediately. No sign-up
-            required.
+            Jump into the editor and start writing code immediately.
           </p>
           <Link to="/editor">
             <Button variant="glow" size="xl">
@@ -239,7 +238,7 @@ const Landing = () => {
             <Code2 className="h-5 w-5 text-primary" />
             <span className="font-semibold">CodeFlow</span>
           </div>
-          <p>©Built for developers, by developers.</p>
+          <p>©Built for developers.</p>
         </div>
       </footer>
     </div>
