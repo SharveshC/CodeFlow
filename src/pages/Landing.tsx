@@ -85,7 +85,7 @@ const Landing = () => {
                   Code anywhere, anytime
                 </span>
               </div>
-              <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight lg:text-6xl">
+              <h1 className="mb-6 text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-6xl">
                 Write, Run, and
                 <span className="gradient-text"> Save Code</span>
                 <br />
@@ -112,7 +112,7 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Code Preview */}
+            {/* Code Preview — desktop */}
             <div
               className="animate-slide-up relative hidden lg:block"
               style={{ animationDelay: '0.2s' }}
@@ -139,6 +139,21 @@ const Landing = () => {
                 style={{ animationDelay: '1s' }}
               >
                 <Code2 className="h-6 w-6 text-accent" />
+              </div>
+            </div>
+
+            {/* Code Preview — mobile/tablet only */}
+            <div className="mt-8 block lg:hidden">
+              <div className="overflow-hidden rounded-xl border border-editor-border bg-editor-bg shadow-xl">
+                <div className="flex items-center gap-2 border-b border-border bg-secondary/30 px-4 py-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-warning/70" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-success/70" />
+                  <span className="ml-2 text-xs text-muted-foreground">fibonacci.js</span>
+                </div>
+                <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed">
+                  <code className="text-foreground">{codeSnippet}</code>
+                </pre>
               </div>
             </div>
           </div>
@@ -203,7 +218,7 @@ const Landing = () => {
               ].map((lang) => (
                 <div
                   key={lang}
-                  className="rounded-xl border border-border bg-secondary/50 px-8 py-4 text-lg font-medium transition-all hover:border-primary/50 hover:bg-secondary"
+                  className="rounded-xl border border-border bg-secondary/50 px-4 py-2 text-sm font-medium transition-all hover:border-primary/50 hover:bg-secondary sm:px-8 sm:py-4 sm:text-lg"
                 >
                   {lang}
                 </div>
