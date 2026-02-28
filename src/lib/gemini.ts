@@ -1,15 +1,12 @@
 /**
  * Gemini REST API helper — no SDK required.
- * Uses gemini-1.5-flash via the stable v1 endpoint.
- *
- * Note: v1 doesn't support the `system_instruction` field.
- * We inject the system prompt as a user→model turn at the start of the
- * conversation instead (standard workaround).
+ * Uses gemini-1.5-flash-latest via the v1beta endpoint.
+ * v1beta supports system_instruction natively.
  */
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
 const GEMINI_MODEL = 'gemini-1.5-flash';
-const API_URL = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 export interface GeminiMessage {
     role: 'user' | 'model';
@@ -20,7 +17,7 @@ export interface GeminiMessage {
  * Send a message to the Gemini API and return the response text.
  * @param history  Previous messages in the conversation
  * @param newMessage  The new user message
- * @param systemInstruction  Optional system context (injected as first turn)
+ * @param systemInstruction  Optional system context
  */
 export async function askGemini(
     history: GeminiMessage[],
@@ -34,29 +31,24 @@ export async function askGemini(
         );
     }
 
-    // v1 doesn't support system_instruction field, so we inject the system
-    // prompt as a user→model handshake at the very beginning of the chat.
-    const systemTurn = systemInstruction
-        ? [
-            { role: 'user', parts: [{ text: systemInstruction }] },
-            { role: 'model', parts: [{ text: 'Understood. I will follow those instructions.' }] },
-        ]
-        : [];
-
     const contents = [
-        ...systemTurn,
         ...history.map((msg) => ({
             role: msg.role,
             parts: [{ text: msg.text }],
         })),
-        // New user message
         { role: 'user', parts: [{ text: newMessage }] },
     ];
+
+    // v1beta supports system_instruction as a top-level field
+    const body: Record<string, unknown> = { contents };
+    if (systemInstruction) {
+        body.system_instruction = { parts: [{ text: systemInstruction }] };
+    }
 
     const res = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents }),
+        body: JSON.stringify(body),
     });
 
     if (!res.ok) {
