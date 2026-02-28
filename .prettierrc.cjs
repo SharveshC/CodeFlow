@@ -9,12 +9,7 @@ module.exports = {
   arrowParens: 'always',
   endOfLine: 'lf',
   htmlWhitespaceSensitivity: 'css',
-  plugins: [
-    '@prettier/plugin-php',
-    '@prettier/plugin-pug',
-    '@prettier/plugin-ruby',
-    '@prettier/plugin-xml',
-  ],
+  plugins: [],
   overrides: [
     {
       files: '*.{js,jsx,ts,tsx}',
