@@ -1,6 +1,10 @@
 /**
  * Gemini REST API helper — no SDK required.
- * Uses the gemini-2.0-flash model via the generateContent endpoint.
+ * Uses gemini-1.5-flash via the stable v1 endpoint.
+ *
+ * Note: v1 doesn't support the `system_instruction` field.
+ * We inject the system prompt as a user→model turn at the start of the
+ * conversation instead (standard workaround).
  */
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
@@ -16,7 +20,7 @@ export interface GeminiMessage {
  * Send a message to the Gemini API and return the response text.
  * @param history  Previous messages in the conversation
  * @param newMessage  The new user message
- * @param systemInstruction  Optional system prompt
+ * @param systemInstruction  Optional system context (injected as first turn)
  */
 export async function askGemini(
     history: GeminiMessage[],
@@ -30,32 +34,29 @@ export async function askGemini(
         );
     }
 
-    // Build conversation contents
+    // v1 doesn't support system_instruction field, so we inject the system
+    // prompt as a user→model handshake at the very beginning of the chat.
+    const systemTurn = systemInstruction
+        ? [
+            { role: 'user', parts: [{ text: systemInstruction }] },
+            { role: 'model', parts: [{ text: 'Understood. I will follow those instructions.' }] },
+        ]
+        : [];
+
     const contents = [
-        // History (exclude the latest user message — we send it separately)
+        ...systemTurn,
         ...history.map((msg) => ({
             role: msg.role,
             parts: [{ text: msg.text }],
         })),
         // New user message
-        {
-            role: 'user',
-            parts: [{ text: newMessage }],
-        },
+        { role: 'user', parts: [{ text: newMessage }] },
     ];
-
-    const body: Record<string, unknown> = { contents };
-
-    if (systemInstruction) {
-        body.system_instruction = {
-            parts: [{ text: systemInstruction }],
-        };
-    }
 
     const res = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ contents }),
     });
 
     if (!res.ok) {
