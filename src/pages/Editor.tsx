@@ -583,13 +583,33 @@ export default function EditorPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Sidebar — overlay on mobile, inline on desktop */}
+        {/* Mobile backdrop */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-20 bg-black/40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         <div className={cn(
-          'w-64 border-r bg-background transition-all duration-300 ease-in-out',
-          !sidebarOpen && '-ml-64'
+          'border-r bg-background transition-all duration-300 ease-in-out z-30',
+          /* Mobile: fixed slide-over */
+          'fixed top-0 left-0 h-full w-72 md:relative md:w-64 md:h-auto',
+          !sidebarOpen && '-translate-x-full md:translate-x-0'
         )}>
-          <div className="p-4">
+          {/* Close button for mobile */}
+          <div className="flex items-center justify-between p-4 md:block">
+            <span className="text-sm font-semibold text-muted-foreground md:hidden">Snippets</span>
+            <button
+              className="rounded p-1 hover:bg-secondary md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="px-4 pb-4">
             <Button
               onClick={handleNewSnippet}
               className="w-full mb-4"
@@ -601,7 +621,7 @@ export default function EditorPage() {
 
             <SnippetList
               snippets={snippets}
-              onSelectSnippet={handleSelectSnippet}
+              onSelectSnippet={(s) => { handleSelectSnippet(s); setSidebarOpen(false); }}
               onDeleteSnippet={handleDeleteSnippet}
               selectedSnippetId={selectedSnippetId}
               isLoading={isLoadingSnippets}
@@ -612,127 +632,123 @@ export default function EditorPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor Toolbar */}
-          <div className="border-b p-2 flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2 justify-between">
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => navigate('/')}
-                  title="Go to Home"
-                >
-                  <Home className="h-4 w-4" />
-                </Button>
+          <div className="border-b p-2 flex flex-col gap-2">
+            {/* Row 1: navigation + title + language */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                title="Go to Home"
+              >
+                <Home className="h-4 w-4" />
+              </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="md:hidden"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+              >
+                <ChevronLeft className={cn('h-4 w-4 transition-transform', sidebarOpen ? '' : 'rotate-180')} />
+              </Button>
 
-                <Input
-                  value={currentSnippetTitle}
-                  onChange={(e) => {
-                    setCurrentSnippetTitle(e.target.value);
-                    // Mark as unsaved when title changes
-                    if (selectedSnippetId || e.target.value.trim()) {
-                      setAutoSaveStatus('unsaved');
-                    }
-                  }}
-                  placeholder="Untitled"
-                  className="w-72"
-                />
+              <Input
+                value={currentSnippetTitle}
+                onChange={(e) => {
+                  setCurrentSnippetTitle(e.target.value);
+                  if (selectedSnippetId || e.target.value.trim()) {
+                    setAutoSaveStatus('unsaved');
+                  }
+                }}
+                placeholder="Untitled"
+                className="min-w-0 flex-1 sm:flex-none sm:w-72"
+              />
 
+              <Select
+                value={language}
+                onValueChange={(value) => {
+                  const nextLanguage = value as Language;
+                  const nextTemplate = defaultCode[nextLanguage];
+                  setLanguage(nextLanguage);
+                  if (nextTemplate) {
+                    setCode(nextTemplate);
+                  }
+                  if (selectedSnippetId || currentSnippetTitle.trim()) {
+                    setAutoSaveStatus('unsaved');
+                  }
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Select language" />
+                </SelectTrigger>
+                <SelectContent>
+                  {languageOptions.map((lang) => (
+                    <SelectItem key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Row 2: editor settings — scrollable on mobile */}
+            <div className="flex items-center gap-3 text-sm text-muted-foreground overflow-x-auto pb-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] uppercase tracking-widest">Theme</span>
                 <Select
-                  value={language}
-                  onValueChange={(value) => {
-                    const nextLanguage = value as Language;
-                    const nextTemplate = defaultCode[nextLanguage];
-
-                    // Always update language and load the template
-                    setLanguage(nextLanguage);
-                    if (nextTemplate) {
-                      setCode(nextTemplate);
-                    }
-
-                    // Mark as unsaved when language changes
-                    if (selectedSnippetId || currentSnippetTitle.trim()) {
-                      setAutoSaveStatus('unsaved');
-                    }
-                  }}
+                  value={editorTheme}
+                  onValueChange={(value) => setEditorTheme(value)}
                 >
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select language" />
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder="Theme" />
                   </SelectTrigger>
                   <SelectContent>
-                    {languageOptions.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
+                    {editorThemeOptions.map((theme) => (
+                      <SelectItem key={theme.value} value={theme.value}>
+                        {theme.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] uppercase tracking-widest">Theme</span>
-                  <Select
-                    value={editorTheme}
-                    onValueChange={(value) => setEditorTheme(value)}
-                  >
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Theme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {editorThemeOptions.map((theme) => (
-                        <SelectItem key={theme.value} value={theme.value}>
-                          {theme.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] uppercase tracking-widest">Font</span>
-                  <input
-                    type="range"
-                    min={12}
-                    max={24}
-                    value={editorFontSize}
-                    onChange={(e) => setEditorFontSize(Number(e.target.value))}
-                    className="h-1 w-32 accent-primary"
-                  />
-                  <span className="text-xs">{editorFontSize}px</span>
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowLineNumbers((prev) => !prev)}
-                  className="uppercase text-[11px]"
-                >
-                  {showLineNumbers ? 'Hide Line #' : 'Show Line #'}
-                </Button>
-                <Button
-                  variant={autoSaveEnabled ? 'secondary' : 'ghost'}
-                  size="sm"
-                  onClick={() => setAutoSaveEnabled((prev) => !prev)}
-                  className="uppercase text-[11px]"
-                >
-                  {autoSaveEnabled ? 'Auto-save On' : 'Auto-save Off'}
-                </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] uppercase tracking-widest">Font</span>
+                <input
+                  type="range"
+                  min={12}
+                  max={24}
+                  value={editorFontSize}
+                  onChange={(e) => setEditorFontSize(Number(e.target.value))}
+                  className="h-1 w-32 accent-primary"
+                />
+                <span className="text-xs">{editorFontSize}px</span>
               </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowLineNumbers((prev) => !prev)}
+                className="uppercase text-[11px]"
+              >
+                {showLineNumbers ? 'Hide Line #' : 'Show Line #'}
+              </Button>
+              <Button
+                variant={autoSaveEnabled ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setAutoSaveEnabled((prev) => !prev)}
+                className="uppercase text-[11px] shrink-0"
+              >
+                {autoSaveEnabled ? 'Auto-save On' : 'Auto-save Off'}
+              </Button>
             </div>
 
+            {/* Row 3: status + run/save buttons */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3">
-                <div className="text-xs text-muted-foreground">
-                  Enhanced Monaco editor with quick controls for theme, font size, and line numbers.
+                <div className="text-xs text-muted-foreground hidden sm:block">
+                  Monaco editor with quick controls.
                 </div>
                 {autoSaveStatus && currentUser && (selectedSnippetId || currentSnippetTitle.trim()) && (
                   <div className={cn(
@@ -794,9 +810,9 @@ export default function EditorPage() {
             </div>
           </div>
 
-          {/* Editor and Output */}
-          <div className="flex-1 flex overflow-hidden">
-            <div className="relative flex-1 overflow-auto p-4 bg-editor-bg">
+          {/* Editor and Output — vertical on mobile, horizontal on md+ */}
+          <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            <div className="relative flex-1 overflow-auto p-4 bg-editor-bg min-h-0">
               <div
                 className={cn(
                   'pointer-events-none absolute inset-4 rounded-lg border border-dashed border-border bg-transparent transition-opacity duration-300',
@@ -818,7 +834,7 @@ export default function EditorPage() {
               />
             </div>
 
-            <div className="w-1/3 border-l">
+            <div className="h-48 md:h-auto md:w-1/3 border-t md:border-t-0 md:border-l flex-shrink-0">
               <OutputConsole
                 output={output}
                 isRunning={isRunning}
