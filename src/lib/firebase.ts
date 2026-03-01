@@ -11,7 +11,7 @@ const getFirebaseConfig = () => {
     // Vercel deployment - use environment variables or defaults
     return {
       apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyA6SFCk7RCJXni_Ve7KS0gt_BusgQ6BTTU',
-      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'your-vercel-app.vercel.app',
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'code-flow-nu-cyan.vercel.app',
       projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'codeflow-306fc',
       storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'codeflow-306fc.appspot.com',
       messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '89644078286',
