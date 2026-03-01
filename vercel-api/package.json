@@ -1,0 +1,8 @@
+{
+  "name": "vercel-ai-proxy",
+  "version": "1.0.0",
+  "dependencies": {
+    "@google/generative-ai": "^0.1.3",
+    "cors": "^2.8.5"
+  }
+}
