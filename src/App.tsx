@@ -42,6 +42,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <AIChatWidget />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Landing />} />
