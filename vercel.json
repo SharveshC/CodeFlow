@@ -4,7 +4,6 @@
   "installCommand": "npm install",
   "framework": "vite",
   "devCommand": "npm run dev",
-  "name": "codeflow",
   "rewrites": [
     {
       "source": "/api/(.*)",
