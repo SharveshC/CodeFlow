@@ -1,6 +1,6 @@
 # 🚀 CodeFlow
 
-**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and Firebase, CodeFlow provides a seamless coding experience with AI assistance, folder organization, and cloud storage.
+**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and deployed on Vercel with Firebase Authentication, CodeFlow provides a seamless coding experience with AI assistance and secure user management.
 
 ![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
@@ -37,7 +37,7 @@
 ### ⚡ Performance
 - **Optimized Build**: Built with Vite for fast development and production builds
 - **Efficient State Management**: React Context for global state
-- **Optimized Queries**: Efficient Firebase queries with proper indexing
+- **Global CDN**: Deployed on Vercel for lightning-fast load times worldwide
 
 ## 🛠️ Tech Stack
 
@@ -53,11 +53,10 @@
 - **Monaco Editor** - Professional code editor
 - **Lucide React** - Beautiful icon library
 
-### Backend & Database
-- **Firebase** - Backend-as-a-Service
-  - **Firebase Authentication** - User authentication
-  - **Cloud Firestore** - NoSQL database for snippets
-  - **Firestore Security Rules** - Data access control
+### Backend & API
+- **Firebase Authentication** - User authentication service
+- **Vercel Functions** - Serverless API endpoints
+- **Google Generative AI** - AI coding assistant backend
 
 ### Code Execution
 - **Judge0 API** - Reliable code execution service
@@ -75,7 +74,9 @@
 - **Node.js** (v18 or higher)
 - **npm** or **yarn** or **bun**
 - **Git**
-- **Firebase Account** (for backend services)
+- **Firebase Account** (for authentication)
+- **Google AI API Key** (for AI features)
+- **Vercel Account** (for deployment)
 
 ### Setup Instructions
 
@@ -94,51 +95,50 @@
    bun install
    ```
 
-3. **Set up Firebase**
+3. **Set up Firebase Authentication**
    - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Set up Authentication (Email/Password and Google)
-   - Create a Firestore database
+   - Enable Authentication (Email/Password and Google)
    - Get your Firebase configuration object
 
 4. **Configure Environment Variables**
-   Create a `.env` file in root directory with your Firebase config:
+   Create a `.env` file in root directory:
    ```env
+   # Firebase Configuration
    VITE_FIREBASE_API_KEY=your-api-key
    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
    VITE_FIREBASE_PROJECT_ID=your-project-id
    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
    VITE_FIREBASE_APP_ID=your-app-id
-   VITE_GOOGLE_AI_API_KEY=your-google-ai-api-key
-   ```
-
-5. **Set Up Firestore Database**
    
-   In your Firebase Console:
-   - Go to **Firestore Database**
-   - Create a database in production mode
-   - Create collections named `snippets` and `folders`
-   - Deploy the security rules from `firestore.rules`
-
-6. **Deploy Firestore Security Rules**
-   ```bash
-   firebase login
-   firebase init firestore
-   firebase deploy --only firestore:rules
+   # Deployment Configuration
+   VITE_DEPLOYMENT_PLATFORM=vercel
+   VITE_AI_ENDPOINT=/api/ai-chat
    ```
 
-7. **Run Development Server**
+5. **Get Google AI API Key**
+   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create a new API key
+   - **Important**: Add this key only in Vercel environment variables
+
+6. **Run Development Server**
    ```bash
    npm run dev
    ```
    
    The app will be available at `http://localhost:8080`
 
-6. **Build for Production**
-   ```bash
-   npm run build
-   npm run preview
-   ```
+7. **Deploy to Vercel**
+   - Push your code to GitHub
+   - Go to [Vercel](https://vercel.com) and import your repository
+   - Add environment variables in Vercel dashboard:
+     - All Firebase variables from step 4
+     - `GOOGLE_AI_API_KEY=your-actual-google-ai-key`
+   - Deploy!
+
+8. **Configure Firebase Domains**
+   - In Firebase Console → Authentication → Settings
+   - Add your Vercel domain to authorized domains
 
 ## 🎮 Usage
 
@@ -292,6 +292,9 @@ service cloud.firestore {
 ## 🚀 Recent Updates
 
 ### v2.1.0 - Critical Fixes (Latest)
+- ✅ **Gemini API Integration Fixed**: Resolved several API-related errors for the AI assistant
+  - Fixed issues with API keys, model names, and API versions
+  - Corrected request formats to ensure reliable AI assistant functionality
 - ✅ **JSX Runtime Issue Fixed**: Resolved "react/jsx-runtime module not found" error
   - Reinstalled dependencies to fix React types resolution
   - Updated TypeScript configuration for proper JSX runtime support
