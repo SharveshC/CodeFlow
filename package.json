@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@firebase/firestore": "^4.9.2",
+    "@google/generative-ai": "^0.21.0",
     "@hookform/resolvers": "^3.10.0",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-accordion": "^1.2.11",
