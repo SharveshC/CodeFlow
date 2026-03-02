@@ -346,41 +346,6 @@ Contributions are welcome! Here's how you can help:
 - Write meaningful commit messages
 - Add comments for complex logic
 
-## � Troubleshooting
-
-### Common Issues & Solutions
-
-#### JSX Runtime Error
-**Problem**: `This JSX tag requires the module path 'react/jsx-runtime' to exist, but none could be found`
-
-**Solution**:
-```bash
-npm install  # Reinstall dependencies to fix React types
-```
-
-#### Vite Build Error on Windows
-**Problem**: `EISDIR: illegal operation on a directory, read file: index.html`
-
-**Solution**: This issue occurs with Vite 7.3.1 on Windows. The project uses Vite 5.4.10 for compatibility.
-
-#### TypeScript Compilation Errors
-**Problem**: TypeScript errors related to Firestore or React types
-
-**Solution**:
-```bash
-npx tsc --project tsconfig.app.json --noEmit  # Check TypeScript errors
-npm run build  # Verify build works
-```
-
-#### Development Server Issues
-**Problem**: Dev server not starting or port conflicts
-
-**Solution**:
-```bash
-npm run dev  # Starts on port 8080
-# If port 8080 is occupied, the server will automatically use the next available port
-```
-
 ### Development Workflow
 After making changes:
 1. **Test locally**: `npm run dev`
