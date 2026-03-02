@@ -10,11 +10,10 @@
 - **AI-Powered Coding Assistant**: Get real-time code suggestions and completions
 - **Monaco Editor**: The same editor that powers VS Code
 - **Real-time Execution**: Run code directly in browser using Judge0 API
-- **Cloud Storage**: Save and manage your code snippets securely
 - **Theme Support**: Light and dark themes with system preference detection
 
 ### 💾 Snippet Management
-- **Save & Organize**: Save and manage your code snippets with folder support
+- **Save & Organize**: Save and manage your code snippets
 - **Folder Organization**: Create nested folder structures for better organization
 - **Duplicate Handling**: Automatically appends timestamps to duplicate snippet names
 - **User-Specific Storage**: Each user's snippets are private and secure
@@ -110,6 +109,7 @@
    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
    VITE_FIREBASE_APP_ID=your-app-id
+   VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
    
    # Deployment Configuration
    VITE_DEPLOYMENT_PLATFORM=vercel
@@ -214,11 +214,14 @@ CodeFlow/
 │   ├── App.tsx            # Main app component
 │   ├── main.tsx           # Entry point
 │   └── index.css          # Global styles
+├── api/                  # Vercel serverless functions
+│   └── ai-chat.js        # AI chat API endpoint
 ├── .env                   # Environment variables (not in repo)
+├── .env.example           # Environment variables template
 ├── package.json           # Dependencies
-├── tsconfig.json          # TypeScript configuration
-├── tailwind.config.ts     # Tailwind CSS configuration
-└── vite.config.ts         # Vite configuration
+├── vercel.json           # Vercel configuration
+├── vite.config.ts         # Vite configuration
+└── tailwind.config.ts     # Tailwind CSS configuration
 ```
 
 ## 🔥 Firebase Setup
@@ -228,70 +231,38 @@ CodeFlow/
 1. Go to **Firebase Console** → **Authentication**
 2. Enable **Email/Password** sign-in method
 3. Enable **Google** sign-in method
-4. Add your domain to authorized domains
+4. Add your Vercel domain to authorized domains
 
-### Firestore Database Schema
+### Environment Variables
 
-**Collection: `snippets`**
-```typescript
-{
-  id: string;              // Auto-generated document ID
-  title: string;           // Snippet title
-  code: string;            // Code content
-  language: string;        // Programming language
-  user_id: string;         // User ID (from Firebase Auth)
-  created_at: Timestamp;    // Creation timestamp
-  updated_at: Timestamp;    // Last update timestamp
-  tags?: string[];         // Optional tags
-  folder?: string;         // Optional folder name
-  folder_path?: string[];  // Full folder path
-  is_favorite?: boolean;   // Optional favorite flag
-  original_title?: string;  // Original title before timestamp
-}
+Add these Firebase variables to your Vercel environment:
 ```
-
-**Collection: `folders`**
-```typescript
-{
-  id: string;              // Auto-generated document ID (path-based)
-  name: string;            // Folder name
-  path: string[];          // Full path to folder
-  user_id: string;         // User ID (from Firebase Auth)
-  created_at: Timestamp;    // Creation timestamp
-  updated_at: Timestamp;    // Last update timestamp
-}
-```
-
-### Security Rules
-
-Current security rules in `firestore.rules`:
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow users to read and write to their own snippets
-    match /snippets/{snippetId} {
-      allow read, update, delete: if request.auth != null && (
-        (resource.data.keys().hasAll(['user_id']) && request.auth.uid == resource.data.user_id) ||
-        (resource.data.keys().hasAll(['userId']) && request.auth.uid == resource.data.userId)
-      );
-      allow create: if request.auth != null && (
-        (request.resource.data.keys().hasAll(['user_id']) && request.resource.data.user_id == request.auth.uid) ||
-        (request.resource.data.keys().hasAll(['userId']) && request.resource.data.userId == request.auth.uid)
-      );
-    }
-    
-    // Allow users to read all snippets (for listing)
-    match /snippets/{snippetId} {
-      allow read: if request.auth != null;
-    }
-  }
-}
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+VITE_FIREBASE_APP_ID=your-app-id
+VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
 
 ## 🚀 Recent Updates
 
-### v2.1.0 - Critical Fixes (Latest)
+### v2.2.0 - Vercel Deployment & Cleanup (Latest)
+- ✅ **Vercel Integration**: Successfully migrated from Firebase hosting to Vercel
+  - Configured Vercel Functions for AI API endpoints
+  - Set up automatic deployments from GitHub
+  - Optimized build configuration for Vercel platform
+- ✅ **Security Improvements**: Secured API keys and environment variables
+  - Removed sensitive data from public files
+  - Configured proper environment variable management
+  - Added domain authorization for Firebase Authentication
+- ✅ **Project Cleanup**: Streamlined codebase for better maintainability
+  - Removed duplicate API directories and unused Firebase files
+  - Cleaned up documentation and configuration files
+  - Maintained only essential code and configuration
+
+### v2.1.0 - Critical Fixes
 - ✅ **Gemini API Integration Fixed**: Resolved several API-related errors for the AI assistant
   - Fixed issues with API keys, model names, and API versions
   - Corrected request formats to ensure reliable AI assistant functionality
@@ -304,16 +275,6 @@ service cloud.firestore {
 - ✅ **TypeScript Compilation**: Fixed Firestore WriteBatch API usage
   - Removed private `_mutations` property access
   - Updated to use proper Firestore batch operations
-
-### v2.0.0 - Major Updates
-- ✅ **Judge0 API Integration**: Migrated from Piston API to avoid whitelist restrictions
-- ✅ **Folder Organization**: Added nested folder support for snippets
-- ✅ **Duplicate Handling**: Automatic timestamp appending for duplicate names
-- ✅ **Enhanced Authentication**: Better error messages for auth issues
-- ✅ **Delete Protection**: Ownership verification before deletion
-- ✅ **TypeScript Organization**: Separated types into dedicated folder
-- ✅ **Security Rules**: Updated to handle both `user_id` and `userId` fields
-- ✅ **UI Improvements**: Removed Lovable branding, added custom preview support
 
 ### Supported Languages
 - JavaScript (Node.js 18.15.0)
@@ -351,9 +312,10 @@ After making changes:
 1. **Test locally**: `npm run dev`
 2. **Check TypeScript**: `npx tsc --project tsconfig.app.json --noEmit`
 3. **Build verification**: `npm run build`
-4. **Deploy**: `firebase deploy`
+4. **Push to GitHub**: `git push origin main`
+5. **Auto-deploy**: Vercel automatically deploys from GitHub
 
-## �📝 License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
