@@ -598,7 +598,7 @@ export default function EditorPage() {
           'border-r bg-background transition-all duration-300 ease-in-out z-30',
           /* Mobile: fixed slide-over */
           'fixed top-0 left-0 h-full w-72 md:relative md:w-64 md:h-auto',
-          !sidebarOpen && '-translate-x-full md:translate-x-0'
+          !sidebarOpen && '-translate-x-full md:hidden'
         )}>
           {/* Close button for mobile */}
           <div className="flex items-center justify-between p-4 md:block">

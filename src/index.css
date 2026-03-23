@@ -5,6 +5,7 @@
 /* Code Editor Design System */
 
 @layer base {
+
   /* Dark Theme (Default) */
   :root.dark {
     --background: 222 47% 11%;
@@ -50,21 +51,15 @@
     --console-bg: 220 27% 8%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(
-      135deg,
-      hsl(187 100% 42%),
-      hsl(263 70% 50%)
-    );
-    --gradient-hero: linear-gradient(
-      180deg,
-      hsl(222 47% 11%) 0%,
-      hsl(220 27% 8%) 100%
-    );
-    --gradient-card: linear-gradient(
-      145deg,
-      hsl(222 47% 13%),
-      hsl(222 47% 11%)
-    );
+    --gradient-primary: linear-gradient(135deg,
+        hsl(187 100% 42%),
+        hsl(263 70% 50%));
+    --gradient-hero: linear-gradient(180deg,
+        hsl(222 47% 11%) 0%,
+        hsl(220 27% 8%) 100%);
+    --gradient-card: linear-gradient(145deg,
+        hsl(222 47% 13%),
+        hsl(222 47% 11%));
 
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(187 100% 42% / 0.15);
@@ -126,16 +121,12 @@
     --console-bg: 0 0% 98%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(
-      135deg,
-      hsl(187 100% 42%),
-      hsl(263 70% 50%)
-    );
-    --gradient-hero: linear-gradient(
-      180deg,
-      hsl(0 0% 100%) 0%,
-      hsl(210 40% 98%) 100%
-    );
+    --gradient-primary: linear-gradient(135deg,
+        hsl(187 100% 42%),
+        hsl(263 70% 50%));
+    --gradient-hero: linear-gradient(180deg,
+        hsl(0 0% 100%) 0%,
+        hsl(210 40% 98%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 40% 98%));
 
     /* Shadows */
@@ -198,21 +189,15 @@
     --console-bg: 220 27% 8%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(
-      135deg,
-      hsl(187 100% 42%),
-      hsl(263 70% 50%)
-    );
-    --gradient-hero: linear-gradient(
-      180deg,
-      hsl(222 47% 11%) 0%,
-      hsl(220 27% 8%) 100%
-    );
-    --gradient-card: linear-gradient(
-      145deg,
-      hsl(222 47% 13%),
-      hsl(222 47% 11%)
-    );
+    --gradient-primary: linear-gradient(135deg,
+        hsl(187 100% 42%),
+        hsl(263 70% 50%));
+    --gradient-hero: linear-gradient(180deg,
+        hsl(222 47% 11%) 0%,
+        hsl(220 27% 8%) 100%);
+    --gradient-card: linear-gradient(145deg,
+        hsl(222 47% 13%),
+        hsl(222 47% 11%));
 
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(187 100% 42% / 0.15);
@@ -300,6 +285,7 @@
 }
 
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0px);
@@ -311,6 +297,7 @@
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     box-shadow: 0 0 20px hsl(187 100% 42% / 0.3);
