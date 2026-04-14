@@ -4,6 +4,20 @@
 
 ![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
+## 📸 Preview
+
+### 🏠 Landing Page
+![Landing](./assets/home1.png)
+
+### ⚙️ Features Section
+![Features](./assets/home2.png)
+
+### 🌐 Supported Languages
+![Languages](./assets/home3.png)
+
+### 💻 Code Editor
+![Editor](./assets/editor.png)
+
 ## ✨ Features
 
 ### 🎯 Core Features
