@@ -1,14 +1,8 @@
-\## 🤝 Contributing
+# 🤝 Contributing to CodeFlow
 
-
-
-Contributions are welcome! Here's how you can help:
-
-
+We welcome contributions of all kinds — bug fixes, new features, and improvements. 
 
 \### Development Workflow
-
-
 
 1\. Fork the repository
 
@@ -23,23 +17,6 @@ Contributions are welcome! Here's how you can help:
 6\. Open a Pull Request
 
 
-
-\### Code Style
-
-
-
-\- Follow TypeScript best practices
-
-\- Use ESLint and Prettier for code formatting
-
-\- Write meaningful commit messages
-
-\- Add comments for complex logic
-
-
-
-\### Development Workflow
-
 After making changes:
 
 1\. \*\*Test locally\*\*: `npm run dev`
@@ -52,5 +29,24 @@ After making changes:
 
 5\. \*\*Auto-deploy\*\*: Vercel automatically deploys from GitHub
 
+## 📌 Pull Request Guidelines
 
+- Keep PRs small and focused
+- Write clear descriptions
+- Link related issues (if any)
+- Ensure code builds successfully
+
+## 🐛 Reporting Issues
+
+If you find a bug:
+- Open an issue
+- Clearly describe the problem
+- Provide steps to reproduce
+
+\### Code Style
+
+\- Follow TypeScript best practices
+\- Use ESLint and Prettier for code formatting
+\- Write meaningful commit messages
+\- Add comments for complex logic
 
