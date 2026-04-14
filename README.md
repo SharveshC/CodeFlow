@@ -4,6 +4,20 @@
 
 ![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
+## 📸 Preview
+
+### 🏠 Landing Page
+![Landing](./assets/home1.png)
+
+### ⚙️ Features Section
+![Features](./assets/home2.png)
+
+### 🌐 Supported Languages
+![Languages](./assets/home3.png)
+
+### 💻 Code Editor
+![Editor](./assets/editor.png)
+
 ## ✨ Features
 
 ### 🎯 Core Features
@@ -245,36 +259,6 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 VITE_FIREBASE_APP_ID=your-app-id
 VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
 ```
-
-## 🚀 Recent Updates
-
-### v2.2.0 - Vercel Deployment & Cleanup (Latest)
-- ✅ **Vercel Integration**: Successfully migrated from Firebase hosting to Vercel
-  - Configured Vercel Functions for AI API endpoints
-  - Set up automatic deployments from GitHub
-  - Optimized build configuration for Vercel platform
-- ✅ **Security Improvements**: Secured API keys and environment variables
-  - Removed sensitive data from public files
-  - Configured proper environment variable management
-  - Added domain authorization for Firebase Authentication
-- ✅ **Project Cleanup**: Streamlined codebase for better maintainability
-  - Removed duplicate API directories and unused Firebase files
-  - Cleaned up documentation and configuration files
-  - Maintained only essential code and configuration
-
-### v2.1.0 - Critical Fixes
-- ✅ **Gemini API Integration Fixed**: Resolved several API-related errors for the AI assistant
-  - Fixed issues with API keys, model names, and API versions
-  - Corrected request formats to ensure reliable AI assistant functionality
-- ✅ **JSX Runtime Issue Fixed**: Resolved "react/jsx-runtime module not found" error
-  - Reinstalled dependencies to fix React types resolution
-  - Updated TypeScript configuration for proper JSX runtime support
-- ✅ **Vite Build Issue Fixed**: Resolved Windows file system error with Vite 7.3.1
-  - Downgraded Vite from 7.3.1 to 5.4.10 for Windows compatibility
-  - Fixed `EISDIR: illegal operation on a directory` build error
-- ✅ **TypeScript Compilation**: Fixed Firestore WriteBatch API usage
-  - Removed private `_mutations` property access
-  - Updated to use proper Firestore batch operations
 
 ### Supported Languages
 - JavaScript (Node.js 18.15.0)
