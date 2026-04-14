@@ -17,36 +17,36 @@ We welcome contributions of all kinds — bug fixes, new features, and improveme
 6\. Open a Pull Request
 
 
-After making changes:
+## After making changes:
 
-1\. \*\*Test locally\*\*: `npm run dev`
+1\. Test locally: `npm run dev`
 
-2\. \*\*Check TypeScript\*\*: `npx tsc --project tsconfig.app.json --noEmit`
+2\. Check TypeScript: `npx tsc --project tsconfig.app.json --noEmit`
 
-3\. \*\*Build verification\*\*: `npm run build`
+3\. Build verification: `npm run build`
 
-4\. \*\*Push to GitHub\*\*: `git push origin main`
+4\. Push to GitHub: `git push origin main`
 
-5\. \*\*Auto-deploy\*\*: Vercel automatically deploys from GitHub
+5\. Auto-deploy: Vercel automatically deploys from GitHub
 
-## 📌 Pull Request Guidelines
+##  Pull Request Guidelines
 
 - Keep PRs small and focused
 - Write clear descriptions
 - Link related issues (if any)
 - Ensure code builds successfully
 
-## 🐛 Reporting Issues
+##  Reporting Issues
 
 If you find a bug:
 - Open an issue
 - Clearly describe the problem
 - Provide steps to reproduce
 
-\### Code Style
+## Code Style
 
-\- Follow TypeScript best practices
-\- Use ESLint and Prettier for code formatting
-\- Write meaningful commit messages
-\- Add comments for complex logic
+- Follow TypeScript best practices
+- Use ESLint and Prettier for code formatting
+- Write meaningful commit messages
+- Add comments for complex logic
 
