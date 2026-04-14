@@ -1,10 +1,12 @@
 # 🚀 CodeFlow
 
-**CodeFlow** is a modern, cloud-based code editor and AI-powered coding assistant that allows developers to write, execute, and save code snippets. Built with React, TypeScript, and deployed on Vercel with Firebase Authentication, CodeFlow provides a seamless coding experience with AI assistance and secure user management.
+## 💡 Why CodeFlow?
+
+CodeFlow was built to provide a fast, cloud-based coding environment with AI assistance, eliminating the need for local setup and enabling developers to code anywhere.
 
 ![CodeFlow Banner](https://img.shields.io/badge/CodeFlow-AI%20Code%20Editor-blue?style=for-the-badge&logo=react)
 
-## 📸 Preview
+# 📸 Preview
 
 ### 🏠 Landing Page
 ![Landing](./assets/home1.png)
