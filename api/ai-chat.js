@@ -1,8 +1,6 @@
 // Vercel Serverless Function for AI Chat API
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY);
-
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,20 +16,42 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, language, code } = req.body;
+    const { message, language, code, conversationHistory, systemInstruction } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const apiKey = process.env.GOOGLE_AI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GOOGLE_AI_API_KEY is not configured on the server' });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction: systemInstruction
+        ? { role: 'system', parts: [{ text: systemInstruction }] }
+        : undefined,
+    });
+
+    const formattedHistory = Array.isArray(conversationHistory)
+      ? conversationHistory.map((m) => ({
+          role: m.role,
+          parts: [{ text: m.text }],
+        }))
+      : [];
+
+    const chat = model.startChat({
+      history: formattedHistory,
+    });
 
     let prompt = message;
-    if (language && code) {
+    if (language && code && !systemInstruction) {
       prompt = `I'm working with ${language} code. Here's my current code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\n${message}`;
     }
 
-    const result = await model.generateContent(prompt);
+    const result = await chat.sendMessage(prompt);
     const response = await result.response;
     const text = response.text();
 

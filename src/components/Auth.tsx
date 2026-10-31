@@ -9,7 +9,8 @@ interface CustomError extends Error {
 }
 import { useToast } from './ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -115,7 +116,7 @@ export function AuthModal({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useAuth();
-  const auth = getAuth();
+
 
   const signup = async (email: string, password: string, fullName: string) => {
     try {
@@ -154,8 +155,7 @@ export function AuthModal({
 
   const loginWithGoogle = async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       throw error;
     }

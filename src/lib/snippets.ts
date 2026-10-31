@@ -1,4 +1,4 @@
-import { db, auth } from '@/integrations/firebase/client';
+import { db, auth } from '@/lib/firebase';
 import { 
   collection, 
   addDoc, 
@@ -7,25 +7,27 @@ import {
   getDocs, 
   deleteDoc, 
   query, 
-  orderBy, 
   where, 
-  serverTimestamp,
-  writeBatch,
-  getDoc,
-  setDoc
+  serverTimestamp, 
+  writeBatch, 
+  getDoc 
 } from 'firebase/firestore';
 
 export interface Snippet {
   id: string;
   title: string;
   code: string;
+  content?: string;
   language: string;
-  created_at: any; // Firestore timestamp
-  updated_at: any; // Firestore timestamp
+  created_at?: any;
+  updated_at?: any;
+  createdAt?: any;
+  updatedAt?: any;
   user_id?: string;
+  userId?: string;
   tags?: string[];
   folder?: string;
-  folder_path?: string[]; // Array of folder names representing the path
+  folder_path?: string[];
   is_favorite?: boolean;
   original_title?: string;
 }
@@ -33,8 +35,9 @@ export interface Snippet {
 export interface Folder {
   id: string;
   name: string;
-  path: string[]; // Full path to the folder
+  path: string[];
   user_id: string;
+  userId?: string;
   created_at: any;
   updated_at: any;
 }
@@ -57,20 +60,19 @@ async function ensureFolderPathExists(folderPath: string[], userId: string): Pro
     const folderDoc = await getDoc(folderRef);
     
     if (!folderDoc.exists()) {
-      // Create the folder if it doesn't exist
       batch.set(folderRef, {
         name: folderName,
         path: [...currentPath],
         user_id: userId,
+        userId: userId,
         created_at: serverTimestamp(),
         updated_at: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
     }
   }
   
-  // Commit all folder creations in a single batch
-  // Note: Firestore WriteBatch doesn't expose a way to check if it has mutations
-  // So we'll always commit - this is safe as an empty batch is a no-op
   await batch.commit();
 }
 
@@ -86,19 +88,21 @@ export async function saveSnippet(
   }
 
   try {
-    // Add a timestamp to the title if a snippet with the same name exists in the same folder
-    const queryConstraints = [
-      where('user_id', '==', user.uid),
-      where('title', '==', title),
-      where('folder_path', '==', folderPath)
-    ];
-    
-    const existingSnippets = await getDocs(
-      query(collection(db, 'snippets'), ...queryConstraints)
+    // Check existing snippets in memory to avoid needing composite indexes in Firestore
+    const userSnippetsQuery = query(
+      collection(db, 'snippets'),
+      where('userId', '==', user.uid)
     );
-    
+    const existingSnap = await getDocs(userSnippetsQuery);
+    const hasDuplicate = existingSnap.docs.some(d => {
+      const data = d.data();
+      const sameTitle = data.title === title;
+      const sameFolder = JSON.stringify(data.folder_path || []) === JSON.stringify(folderPath);
+      return sameTitle && sameFolder;
+    });
+
     let finalTitle = title;
-    if (!existingSnippets.empty) {
+    if (hasDuplicate) {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       finalTitle = `${title} (${timestamp})`;
     }
@@ -111,12 +115,16 @@ export async function saveSnippet(
     const docRef = await addDoc(collection(db, 'snippets'), {
       title: finalTitle,
       code,
+      content: code,
       language,
+      userId: user.uid,
       user_id: user.uid,
       folder: folderPath.length > 0 ? folderPath[folderPath.length - 1] : null,
       folder_path: folderPath,
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       original_title: title,
     });
 
@@ -124,11 +132,15 @@ export async function saveSnippet(
       id: docRef.id,
       title: finalTitle,
       code,
+      content: code,
       language,
       folder: folderPath.length > 0 ? folderPath[folderPath.length - 1] : undefined,
       folder_path: folderPath.length > 0 ? folderPath : undefined,
       created_at: new Date(),
       updated_at: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      userId: user.uid,
       user_id: user.uid,
       original_title: title,
     };
@@ -152,17 +164,19 @@ export async function upsertSnippet(
       await updateDoc(snippetRef, {
         title: snippet.title,
         code: snippet.code,
+        content: snippet.code,
         language: snippet.language,
         updated_at: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       });
 
-      // Return the updated snippet (we don't have the full document here)
       return {
         ...snippet,
+        content: snippet.code,
         updated_at: new Date(),
+        updatedAt: new Date(),
       } as Snippet;
     } else {
-      // Create new snippet
       return saveSnippet(snippet.title, snippet.code, snippet.language);
     }
   } catch (error) {
@@ -178,17 +192,37 @@ export async function getAllSnippets(): Promise<Snippet[]> {
   }
 
   try {
-    const q = query(
+    // Query without orderBy to avoid needing a Firestore composite index
+    const q1 = query(
       collection(db, 'snippets'),
-      where('user_id', '==', user.uid),
-      orderBy('created_at', 'desc')
+      where('userId', '==', user.uid)
     );
-    
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Snippet[];
+    const snap1 = await getDocs(q1);
+
+    const q2 = query(
+      collection(db, 'snippets'),
+      where('user_id', '==', user.uid)
+    );
+    const snap2 = await getDocs(q2);
+
+    const docMap = new Map<string, any>();
+    snap1.docs.forEach(d => docMap.set(d.id, { id: d.id, ...d.data() }));
+    snap2.docs.forEach(d => docMap.set(d.id, { id: d.id, ...d.data() }));
+
+    const snippets = Array.from(docMap.values()).map(data => ({
+      ...data,
+      code: data.code || data.content || '',
+      content: data.content || data.code || '',
+    }));
+
+    // Client-side sort descending by updatedAt / createdAt
+    snippets.sort((a, b) => {
+      const aTime = a.updatedAt?.toMillis?.() || a.updated_at?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+      const bTime = b.updatedAt?.toMillis?.() || b.updated_at?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return snippets as Snippet[];
   } catch (error) {
     console.error('Error fetching snippets:', error);
     throw error;
@@ -203,7 +237,6 @@ export async function deleteSnippet(id: string): Promise<void> {
 
   try {
     const snippetRef = doc(db, 'snippets', id);
-    // First, get the snippet to verify ownership
     const snippetDoc = await getDoc(snippetRef);
     
     if (!snippetDoc.exists()) {
@@ -211,13 +244,11 @@ export async function deleteSnippet(id: string): Promise<void> {
     }
 
     const snippetData = snippetDoc.data();
-    
-    // Verify the current user is the owner of the snippet
-    if (snippetData.user_id !== user.uid) {
+    const ownerId = snippetData.userId || snippetData.user_id;
+    if (ownerId !== user.uid) {
       throw new Error('You do not have permission to delete this snippet');
     }
 
-    // If we get here, the user is authenticated and owns the snippet
     await deleteDoc(snippetRef);
   } catch (error) {
     console.error('Error deleting snippet:', error);

@@ -10,13 +10,16 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
     if (!email || !password) {
+      setError('Please enter both email and password');
       return;
     }
 
@@ -24,20 +27,23 @@ const Login = () => {
     try {
       await login(email, password);
       navigate('/editor');
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err?.message || 'Failed to sign in. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
     setIsLoading(true);
     try {
       await loginWithGoogle();
       navigate('/editor');
-    } catch (error) {
-      console.error('Google login error:', error);
+    } catch (err: any) {
+      console.error('Google login error:', err);
+      setError(err?.message || 'Failed to sign in with Google.');
     } finally {
       setIsLoading(false);
     }
@@ -67,6 +73,12 @@ const Login = () => {
               Sign in to your account to continue
             </p>
           </div>
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}

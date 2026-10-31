@@ -227,10 +227,14 @@ export default function EditorPage() {
         where('userId', '==', currentUser.uid)
       );
       const querySnapshot = await getDocs(q);
-      const snippetsData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Snippet[];
+      const snippetsData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          content: data.content ?? data.code ?? '',
+        };
+      }) as Snippet[];
 
       // Sort in JavaScript to avoid needing a composite index
       snippetsData.sort((a, b) => {
@@ -355,9 +359,12 @@ export default function EditorPage() {
       const snippetData = {
         title,
         content: code,
+        code,
         language,
         userId: currentUser.uid,
+        user_id: currentUser.uid,
         updatedAt: serverTimestamp(),
+        updated_at: serverTimestamp(),
       };
 
       if (selectedSnippetId) {
@@ -505,7 +512,8 @@ export default function EditorPage() {
 
     setSelectedSnippetId(snippet.id);
     setCurrentSnippetTitle(snippet.title);
-    setCode(snippet.content);
+    const initialCode = snippet.content || (snippet as any).code || '';
+    setCode(initialCode);
     setLanguage(snippet.language);
     setOutput('');
     setIsError(false);
@@ -516,10 +524,11 @@ export default function EditorPage() {
       const snippetDoc = await getDoc(doc(db, 'snippets', snippet.id));
       if (snippetDoc.exists()) {
         const snippetData = snippetDoc.data() as Snippet;
-        setCode(snippetData.content);
+        const codeText = snippetData.content ?? (snippetData as any).code ?? '';
+        setCode(codeText);
         setLanguage(snippetData.language);
         setCurrentSnippetTitle(snippetData.title);
-        setSnippets(prev => prev.map((s) => s.id === snippet.id ? { ...s, ...snippetData } : s));
+        setSnippets(prev => prev.map((s) => s.id === snippet.id ? { ...s, ...snippetData, content: codeText } : s));
       }
     } catch (error) {
       console.error('Error loading snippet:', error);

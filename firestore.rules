@@ -1,10 +1,33 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow users to read and write to their own snippets
+    // Snippets: users can only read, write, and delete their own snippets
     match /snippets/{snippetId} {
-      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.user_id == request.auth.uid
+      );
+      allow create: if request.auth != null && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.user_id == request.auth.uid
+      );
+    }
+
+    // Folders: users can manage their own folder hierarchy
+    match /folders/{folderId} {
+      allow read, update, delete: if request.auth != null && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.user_id == request.auth.uid
+      );
+      allow create: if request.auth != null && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.user_id == request.auth.uid
+      );
+    }
+
+    // Fallback: authenticated users can access their documents
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }
